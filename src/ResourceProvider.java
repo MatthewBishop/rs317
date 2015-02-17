@@ -157,7 +157,7 @@ public class ResourceProvider extends Provider implements Runnable {
 	}
 
 	public final void loadExtra(int type, int file) {
-		if (client.resourceCaches[0] == null) {
+		if (client.indices[0] == null) {
 			return;
 		}
 		if (versions[type][file] == 0) {
@@ -265,14 +265,14 @@ public class ResourceProvider extends Provider implements Runnable {
 	}
 
 	public final void requestExtra(int type, int file, byte priority) {
-		if (client.resourceCaches[0] == null) {
+		if (client.indices[0] == null) {
 			return;
 		}
 		if (versions[type][file] == 0) {
 			return;
 		}
 
-		byte[] data = client.resourceCaches[type + 1].decompress(file);
+		byte[] data = client.indices[type + 1].decompress(file);
 		if (verify(data, crcs[type][file], versions[type][file])) {
 			return;
 		}
@@ -301,7 +301,7 @@ public class ResourceProvider extends Provider implements Runnable {
 			while (running) {
 				tick++;
 				int sleepLength = 20;
-				if (maximumPriority == 0 && client.resourceCaches[0] != null) {
+				if (maximumPriority == 0 && client.indices[0] != null) {
 					sleepLength = 50;
 				}
 				try {
@@ -367,7 +367,7 @@ public class ResourceProvider extends Provider implements Runnable {
 					loadingMessage = "";
 				}
 				if (client.loggedIn && socket != null && outputStream != null
-						&& (maximumPriority > 0 || client.resourceCaches[0] == null)) {
+						&& (maximumPriority > 0 || client.indices[0] == null)) {
 					deadTime++;
 					if (deadTime > 500) {
 						deadTime = 0;
@@ -456,8 +456,8 @@ public class ResourceProvider extends Provider implements Runnable {
 		while (request != null) {
 			expectingData = true;
 			byte[] data = null;
-			if (client.resourceCaches[0] != null) {
-				data = client.resourceCaches[request.type + 1].decompress(request.file);
+			if (client.indices[0] != null) {
+				data = client.indices[request.type + 1].decompress(request.file);
 			}
 			if (!verify(data, crcs[request.type][request.file], versions[request.type][request.file])) {
 				data = null;
@@ -612,8 +612,8 @@ public class ResourceProvider extends Provider implements Runnable {
 
 				}
 				if (remainingData + this.read >= data.length && current != null) {
-					if (client.resourceCaches[0] != null) {
-						client.resourceCaches[current.type + 1].put(data, current.file, data.length);
+					if (client.indices[0] != null) {
+						client.indices[current.type + 1].put(data, current.file, data.length);
 					}
 					if (!current.mandatory && current.type == 3) {
 						current.mandatory = true;

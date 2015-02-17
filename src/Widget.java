@@ -1,39 +1,40 @@
 public class Widget {
 
-	public static Widget widgets[];
+	public static Widget[] widgets;
 	static Cache models = new Cache(30);
-	private static Cache sprites;
+	private static Cache spriteCache;
 
 	public static void clearModels(int id, int type, Model model) {
 		models.unlink();
+
 		if (model != null && type != 4) {
 			models.put(model, (type << 16) + id);
 		}
 	}
 
 	public static void load(Archive interfaces, Archive graphics, Font[] fonts) {
-		sprites = new Cache(50000);
+		spriteCache = new Cache(50000);
 		Buffer buffer = new Buffer(interfaces.extract("data"));
-		int i = -1;
+		int parent = -1;
 		int count = buffer.readUShort();
 		widgets = new Widget[count];
 
 		while (buffer.position < buffer.payload.length) {
 			int id = buffer.readUShort();
 			if (id == 65535) {
-				i = buffer.readUShort();
+				parent = buffer.readUShort();
 				id = buffer.readUShort();
 			}
 
 			Widget widget = widgets[id] = new Widget();
 			widget.id = id;
-			widget.anInt236 = i;
-			widget.anInt262 = buffer.readUByte();
+			widget.parent = parent;
+			widget.type = buffer.readUByte();
 			widget.anInt217 = buffer.readUByte();
 			widget.anInt214 = buffer.readUShort();
 			widget.width = buffer.readUShort();
 			widget.height = buffer.readUShort();
-			widget.aByte254 = (byte) buffer.readUByte();
+			widget.alpha = (byte) buffer.readUByte();
 			widget.anInt230 = buffer.readUByte();
 
 			if (widget.anInt230 != 0) {
@@ -44,10 +45,10 @@ public class Widget {
 
 			int i1 = buffer.readUByte();
 			if (i1 > 0) {
-				widget.anIntArray245 = new int[i1];
+				widget.scriptOperators = new int[i1];
 				widget.anIntArray212 = new int[i1];
 				for (int j1 = 0; j1 < i1; j1++) {
-					widget.anIntArray245[j1] = buffer.readUByte();
+					widget.scriptOperators[j1] = buffer.readUByte();
 					widget.anIntArray212[j1] = buffer.readUShort();
 				}
 
@@ -65,105 +66,105 @@ public class Widget {
 				}
 			}
 
-			if (widget.anInt262 == 0) {
-				widget.anInt261 = buffer.readUShort();
+			if (widget.type == 0) {
+				widget.scrollLimit = buffer.readUShort();
 				widget.aBoolean266 = buffer.readUByte() == 1;
-				int i2 = buffer.readUShort();
-				widget.children = new int[i2];
-				widget.anIntArray241 = new int[i2];
-				widget.anIntArray272 = new int[i2];
+				int children = buffer.readUShort();
+				widget.children = new int[children];
+				widget.childX = new int[children];
+				widget.childY = new int[children];
 
-				for (int j3 = 0; j3 < i2; j3++) {
-					widget.children[j3] = buffer.readUShort();
-					widget.anIntArray241[j3] = buffer.readShort();
-					widget.anIntArray272[j3] = buffer.readShort();
+				for (int index = 0; index < children; index++) {
+					widget.children[index] = buffer.readUShort();
+					widget.childX[index] = buffer.readShort();
+					widget.childY[index] = buffer.readShort();
 				}
 			}
 
-			if (widget.anInt262 == 1) {
-				widget.anInt211 = buffer.readUShort();
-				widget.aBoolean251 = buffer.readUByte() == 1;
+			if (widget.type == 1) {
+				buffer.readUShort();
+				buffer.readUByte(); // == 1
 			}
 
-			if (widget.anInt262 == 2) {
+			if (widget.type == 2) {
 				widget.inventoryIds = new int[widget.width * widget.height];
 				widget.inventoryAmounts = new int[widget.width * widget.height];
 				widget.aBoolean259 = buffer.readUByte() == 1;
 				widget.aBoolean249 = buffer.readUByte() == 1;
 				widget.aBoolean242 = buffer.readUByte() == 1;
 				widget.aBoolean235 = buffer.readUByte() == 1;
-				widget.anInt231 = buffer.readUByte();
-				widget.anInt244 = buffer.readUByte();
-				widget.anIntArray215 = new int[20];
-				widget.anIntArray247 = new int[20];
-				widget.wornIcons = new DirectSprite[20];
+				widget.spritePaddingX = buffer.readUByte();
+				widget.spritePaddingY = buffer.readUByte();
+				widget.spriteX = new int[20];
+				widget.spriteY = new int[20];
+				widget.sprites = new DirectSprite[20];
 
-				for (int j2 = 0; j2 < 20; j2++) {
-					int k3 = buffer.readUByte();
-					if (k3 == 1) {
-						widget.anIntArray215[j2] = buffer.readShort();
-						widget.anIntArray247[j2] = buffer.readShort();
+				for (int index = 0; index < 20; index++) {
+					int exists = buffer.readUByte();
+					if (exists == 1) {
+						widget.spriteX[index] = buffer.readShort();
+						widget.spriteY[index] = buffer.readShort();
 						String name = buffer.readString();
 						if (graphics != null && name.length() > 0) {
 							int position = name.lastIndexOf(",");
-							widget.wornIcons[j2] = getSprite(Integer.parseInt(name.substring(position + 1)), graphics,
+							widget.sprites[index] = getSprite(Integer.parseInt(name.substring(position + 1)), graphics,
 									name.substring(0, position));
 						}
 					}
 				}
 
-				widget.menuActions = new String[5];
-				for (int l3 = 0; l3 < 5; l3++) {
-					widget.menuActions[l3] = buffer.readString();
+				widget.actions = new String[5];
+				for (int index = 0; index < 5; index++) {
+					widget.actions[index] = buffer.readString();
 
-					if (widget.menuActions[l3].length() == 0) {
-						widget.menuActions[l3] = null;
+					if (widget.actions[index].length() == 0) {
+						widget.actions[index] = null;
 					}
 				}
 			}
 
-			if (widget.anInt262 == 3) {
+			if (widget.type == 3) {
 				widget.filled = buffer.readUByte() == 1;
 			}
 
-			if (widget.anInt262 == 4 || widget.anInt262 == 1) {
-				widget.aBoolean223 = buffer.readUByte() == 1;
+			if (widget.type == 4 || widget.type == 1) {
+				widget.centeredText = buffer.readUByte() == 1;
 				int font = buffer.readUByte();
 				if (fonts != null) {
 					widget.font = fonts[font];
 				}
 
-				widget.aBoolean268 = buffer.readUByte() == 1;
+				widget.shadowedText = buffer.readUByte() == 1;
 			}
 
-			if (widget.anInt262 == 4) {
-				widget.customisableText = buffer.readString();
-				widget.aString228 = buffer.readString();
+			if (widget.type == 4) {
+				widget.hiddenText = buffer.readString();
+				widget.text = buffer.readString();
 			}
 
-			if (widget.anInt262 == 1 || widget.anInt262 == 3 || widget.anInt262 == 4) {
+			if (widget.type == 1 || widget.type == 3 || widget.type == 4) {
 				widget.colour = buffer.readInt();
 			}
 
-			if (widget.anInt262 == 3 || widget.anInt262 == 4) {
+			if (widget.type == 3 || widget.type == 4) {
 				widget.anInt219 = buffer.readInt();
 				widget.anInt216 = buffer.readInt();
 				widget.anInt239 = buffer.readInt();
-			} else if (widget.anInt262 == 5) {
-				String s = buffer.readString();
-				if (graphics != null && s.length() > 0) {
-					int i4 = s.lastIndexOf(",");
-					widget.aClass30_Sub2_Sub1_Sub1_207 = getSprite(Integer.parseInt(s.substring(i4 + 1)), graphics,
-							s.substring(0, i4));
+			} else if (widget.type == 5) {
+				String name = buffer.readString();
+				if (graphics != null && name.length() > 0) {
+					int index = name.lastIndexOf(",");
+					widget.aClass30_Sub2_Sub1_Sub1_207 = getSprite(Integer.parseInt(name.substring(index + 1)), graphics,
+							name.substring(0, index));
 				}
 
-				s = buffer.readString();
-				if (graphics != null && s.length() > 0) {
-					int j4 = s.lastIndexOf(",");
-					widget.aClass30_Sub2_Sub1_Sub1_260 = getSprite(Integer.parseInt(s.substring(j4 + 1)), graphics,
-							s.substring(0, j4));
+				name = buffer.readString();
+				if (graphics != null && name.length() > 0) {
+					int index = name.lastIndexOf(",");
+					widget.aClass30_Sub2_Sub1_Sub1_260 = getSprite(Integer.parseInt(name.substring(index + 1)), graphics,
+							name.substring(0, index));
 				}
-			} else if (widget.anInt262 == 6) {
+			} else if (widget.type == 6) {
 				int content = buffer.readUByte();
 				if (content != 0) {
 					widget.mediaType = 1;
@@ -193,115 +194,99 @@ public class Widget {
 				widget.spriteScale = buffer.readUShort();
 				widget.spritePitch = buffer.readUShort();
 				widget.spriteRoll = buffer.readUShort();
-			} else if (widget.anInt262 == 7) {
+			} else if (widget.type == 7) {
 				widget.inventoryIds = new int[widget.width * widget.height];
 				widget.inventoryAmounts = new int[widget.width * widget.height];
-				widget.aBoolean223 = buffer.readUByte() == 1;
+				widget.centeredText = buffer.readUByte() == 1;
 				int font = buffer.readUByte();
 				if (fonts != null) {
 					widget.font = fonts[font];
 				}
 
-				widget.aBoolean268 = buffer.readUByte() == 1;
+				widget.shadowedText = buffer.readUByte() == 1;
 				widget.colour = buffer.readInt();
-				widget.anInt231 = buffer.readShort();
-				widget.anInt244 = buffer.readShort();
+				widget.spritePaddingX = buffer.readShort();
+				widget.spritePaddingY = buffer.readShort();
 				widget.aBoolean249 = buffer.readUByte() == 1;
-				widget.menuActions = new String[5];
-				for (int k4 = 0; k4 < 5; k4++) {
-					widget.menuActions[k4] = buffer.readString();
-					if (widget.menuActions[k4].length() == 0) {
-						widget.menuActions[k4] = null;
+				widget.actions = new String[5];
+
+				for (int index = 0; index < 5; index++) {
+					widget.actions[index] = buffer.readString();
+					if (widget.actions[index].length() == 0) {
+						widget.actions[index] = null;
 					}
 				}
 			}
 
-			if (widget.anInt217 == 2 || widget.anInt262 == 2) {
+			if (widget.anInt217 == 2 || widget.type == 2) {
 				widget.aString222 = buffer.readString();
 				widget.aString218 = buffer.readString();
 				widget.anInt237 = buffer.readUShort();
 			}
 
 			if (widget.anInt217 == 1 || widget.anInt217 == 4 || widget.anInt217 == 5 || widget.anInt217 == 6) {
-				widget.text = buffer.readString();
-				if (widget.text.length() == 0) {
+				widget.hover = buffer.readString();
+
+				if (widget.hover.length() == 0) {
 					if (widget.anInt217 == 1) {
-						widget.text = "Ok";
-					}
-					if (widget.anInt217 == 4) {
-						widget.text = "Select";
-					}
-					if (widget.anInt217 == 5) {
-						widget.text = "Select";
-					}
-					if (widget.anInt217 == 6) {
-						widget.text = "Continue";
+						widget.hover = "Ok";
+					} else if (widget.anInt217 == 4) {
+						widget.hover = "Select";
+					} else if (widget.anInt217 == 5) {
+						widget.hover = "Select";
+					} else if (widget.anInt217 == 6) {
+						widget.hover = "Continue";
 					}
 				}
-			}
-
-			if (widget.anInt217 == 2) {
-				System.out.println("Widget: " + widget.id + ", " + (widget.children != null ? widget.children.length : -1));
 			}
 		}
 	}
 
 	private static DirectSprite getSprite(int position, Archive archive, String name) {
 		long key = (StringUtils.hashSpriteName(name) << 8) + position;
-		DirectSprite sprite = (DirectSprite) sprites.get(key);
+		DirectSprite sprite = (DirectSprite) spriteCache.get(key);
 		if (sprite != null) {
 			return sprite;
 		}
 
 		try {
 			sprite = new DirectSprite(archive, name, position);
-			sprites.put(sprite, key);
+			spriteCache.put(sprite, key);
 		} catch (Exception ex) {
 			return null;
 		}
 		return sprite;
 	}
 
-	public boolean aBoolean223;
-
 	public boolean aBoolean235;
+
 	public boolean aBoolean242;
 	public boolean aBoolean249;
-	public boolean aBoolean251;
 	public boolean aBoolean259;
 	public boolean aBoolean266;
-	public boolean aBoolean268;
-	public byte aByte254;
 	public DirectSprite aClass30_Sub2_Sub1_Sub1_207;
 	public DirectSprite aClass30_Sub2_Sub1_Sub1_260;
-	public int anInt211;
+	public String[] actions;
+	public byte alpha;
 	public int anInt214;
 	public int anInt216;
 	public int anInt217;
 	public int anInt219;
 	public int anInt230;
-	public int anInt231;
-	public int anInt236;
 	public int anInt237;
 	public int anInt239;
-	public int anInt244;
 	public int anInt255;
 	public int anInt256;
 	public int anInt258;
-	public int anInt261;
-	public int anInt262;
 	public int[] anIntArray212;
-	public int[] anIntArray215;
-	public int[] anIntArray241;
-	public int[] anIntArray245;
-	public int[] anIntArray247;
-	public int[] anIntArray272;
+	public int[] scriptOperators;
 	public String aString218;
 	public String aString222;
-	public String aString228;
+	public boolean centeredText;
 	public int[] children;
+	public int[] childX;
+	public int[] childY;
 	public int colour;
-	public String customisableText;
 	public int displayedFrameCount;
 	/**
 	 * Indicates whether or not the widget should be drawn filled, or just as an outline.
@@ -309,7 +294,9 @@ public class Widget {
 	public boolean filled;
 	public Font font;
 	public int height;
+	public String hiddenText;
 	public int horizontalDrawOffset;
+	public String hover;
 	public int id;
 	public int[] inventoryAmounts;
 	public int[] inventoryIds;
@@ -317,16 +304,23 @@ public class Widget {
 	public int media;
 	public int mediaAnimationId;
 	public int mediaType;
-	public String[] menuActions;
+	public int parent;
 	public int[][] scripts;
+	public int scrollLimit;
 	public int scrollPosition;
+	public boolean shadowedText;
+	public int spritePaddingX;
+	public int spritePaddingY;
 	public int spritePitch;
 	public int spriteRoll;
+	public DirectSprite[] sprites; // FIXME nope
 	public int spriteScale;
+	public int[] spriteX;
+	public int[] spriteY;
 	public String text;
+	public int type;
 	public int verticalDrawOffset;
 	public int width;
-	public DirectSprite[] wornIcons; // FIXME nope
 
 	public Model method209(int primaryFrame, int secondaryFrame, boolean flag) {
 		Model model = flag ? getModel(anInt255, anInt256) : getModel(mediaType, media);
@@ -339,21 +333,21 @@ public class Widget {
 			return model;
 		}
 
-		Model animatedModel = new Model(true, Frame.isInvalid(primaryFrame) & Frame.isInvalid(secondaryFrame), false, model);
+		Model animated = new Model(true, Frame.isInvalid(primaryFrame) & Frame.isInvalid(secondaryFrame), false, model);
 		if (primaryFrame != -1 || secondaryFrame != -1) {
-			animatedModel.skin();
+			animated.skin();
 		}
 
 		if (primaryFrame != -1) {
-			animatedModel.apply(primaryFrame);
+			animated.apply(primaryFrame);
 		}
 
 		if (secondaryFrame != -1) {
-			animatedModel.apply(secondaryFrame);
+			animated.apply(secondaryFrame);
 		}
 
-		animatedModel.light(64, 768, -50, -10, -50, true);
-		return animatedModel;
+		animated.light(64, 768, -50, -10, -50, true);
+		return animated;
 	}
 
 	public void swapInventoryItems(int first, int second) {

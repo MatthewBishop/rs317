@@ -1,17 +1,19 @@
 final class ComplexTile {
 
-	static int anIntArray688[] = new int[6];
-	static int anIntArray689[] = new int[6];
-	static int anIntArray690[] = new int[6];
-	static int anIntArray691[] = new int[6];
-	static int anIntArray692[] = new int[6];
-	static int anIntArray693[] = { 1, 0 };
-	static int anIntArray694[] = { 2, 1 };
-	static int anIntArray695[] = { 3, 3 };
-	static final int anIntArrayArray696[][] = { { 1, 3, 5, 7 }, { 1, 3, 5, 7 }, { 1, 3, 5, 7 }, { 1, 3, 5, 7, 6 },
+	static int[] anIntArray688 = new int[6];
+	static int[] anIntArray689 = new int[6];
+	static int[] anIntArray690 = new int[6];
+	static int[] anIntArray691 = new int[6];
+	static int[] anIntArray692 = new int[6];
+	static int[] anIntArray693 = { 1, 0 };
+	static int[] anIntArray694 = { 2, 1 };
+	static int[] anIntArray695 = { 3, 3 };
+
+	static final int[][] anIntArrayArray696 = { { 1, 3, 5, 7 }, { 1, 3, 5, 7 }, { 1, 3, 5, 7 }, { 1, 3, 5, 7, 6 },
 			{ 1, 3, 5, 7, 6 }, { 1, 3, 5, 7, 6 }, { 1, 3, 5, 7, 6 }, { 1, 3, 5, 7, 2, 6 }, { 1, 3, 5, 7, 2, 8 },
 			{ 1, 3, 5, 7, 2, 8 }, { 1, 3, 5, 7, 11, 12 }, { 1, 3, 5, 7, 11, 12 }, { 1, 3, 5, 7, 13, 14 } };
-	static final int anIntArrayArray697[][] = { { 0, 1, 2, 3, 0, 0, 1, 3 }, { 1, 1, 2, 3, 1, 0, 1, 3 },
+
+	static final int[][] anIntArrayArray697 = { { 0, 1, 2, 3, 0, 0, 1, 3 }, { 1, 1, 2, 3, 1, 0, 1, 3 },
 			{ 0, 1, 2, 3, 1, 0, 1, 3 }, { 0, 0, 1, 2, 0, 0, 2, 4, 1, 0, 4, 3 }, { 0, 0, 1, 4, 0, 0, 4, 3, 1, 1, 2, 4 },
 			{ 0, 0, 4, 3, 1, 0, 1, 2, 1, 0, 2, 4 }, { 0, 1, 2, 4, 1, 0, 1, 4, 1, 0, 4, 3 },
 			{ 0, 4, 1, 2, 0, 4, 2, 5, 1, 0, 4, 5, 1, 0, 5, 3 }, { 0, 4, 1, 2, 0, 4, 2, 3, 0, 4, 3, 5, 1, 0, 4, 5 },
@@ -19,20 +21,21 @@ final class ComplexTile {
 			{ 0, 0, 1, 5, 0, 1, 4, 5, 0, 1, 2, 4, 1, 0, 5, 3, 1, 5, 4, 3, 1, 4, 2, 3 },
 			{ 1, 0, 1, 5, 1, 1, 4, 5, 1, 1, 2, 4, 0, 0, 5, 3, 0, 5, 4, 3, 0, 4, 2, 3 },
 			{ 1, 0, 5, 4, 1, 0, 1, 5, 0, 0, 4, 3, 0, 4, 5, 3, 0, 5, 2, 3, 0, 1, 2, 5 } };
+
 	boolean aBoolean683;
 	int anInt684;
 	int anInt686;
 	int anInt687;
-	int anIntArray673[];
-	int anIntArray674[];
-	int anIntArray675[];
-	int anIntArray676[];
-	int anIntArray677[];
-	int anIntArray678[];
-	int anIntArray679[];
-	int anIntArray680[];
-	int anIntArray681[];
-	int anIntArray682[];
+	int[] anIntArray673;
+	int[] anIntArray674;
+	int[] anIntArray675;
+	int[] anIntArray676;
+	int[] anIntArray677;
+	int[] anIntArray678;
+	int[] anIntArray679;
+	int[] anIntArray680;
+	int[] anIntArray681;
+	int[] anIntArray682;
 	int orientation;
 
 	public ComplexTile(int y, int j, int k, int northEastZ, int texture, int j1, int orientation, int l1, int i2, int j2,
@@ -47,10 +50,11 @@ final class ComplexTile {
 		anInt686 = i2;
 		anInt687 = l4;
 
+		int j5 = 32;
+		int i5 = 64;
+		int k5 = 96;
 		int c = 128;
-		int i5 = c / 2;
-		int j5 = c / 4;
-		int k5 = c * 3 / 4;
+
 		int[] ai = anIntArrayArray696[j3];
 		int l5 = ai.length;
 		anIntArray673 = new int[l5];
@@ -66,17 +70,21 @@ final class ComplexTile {
 			if ((l6 & 1) == 0 && l6 <= 8) {
 				l6 = (l6 - orientation - orientation - 1 & 7) + 1;
 			}
+
 			if (l6 > 8 && l6 <= 12) {
 				l6 = (l6 - 9 - orientation & 3) + 9;
 			}
+
 			if (l6 > 12 && l6 <= 16) {
 				l6 = (l6 - 13 - orientation & 3) + 13;
 			}
+
 			int i7;
 			int k7;
 			int i8;
 			int k8;
 			int j9;
+
 			if (l6 == 1) {
 				i7 = i6;
 				k7 = j6;
@@ -174,6 +182,7 @@ final class ComplexTile {
 				k8 = k;
 				j9 = k3;
 			}
+
 			anIntArray673[k6] = i7;
 			anIntArray674[k6] = i8;
 			anIntArray675[k6] = k7;
@@ -189,10 +198,12 @@ final class ComplexTile {
 		anIntArray676 = new int[j7];
 		anIntArray677 = new int[j7];
 		anIntArray678 = new int[j7];
+
 		if (texture != -1) {
 			anIntArray682 = new int[j7];
 		}
 		int l7 = 0;
+
 		for (int j8 = 0; j8 < j7; j8++) {
 			int l8 = ai3[l7];
 			int k9 = ai3[l7 + 1];
@@ -230,24 +241,25 @@ final class ComplexTile {
 
 		int i9 = centreZ;
 		int l9 = eastZ;
+
 		if (eastZ < i9) {
 			i9 = eastZ;
-		}
-		if (eastZ > l9) {
+		} else if (eastZ > l9) {
 			l9 = eastZ;
 		}
+
 		if (northEastZ < i9) {
 			i9 = northEastZ;
-		}
-		if (northEastZ > l9) {
+		} else if (northEastZ > l9) {
 			l9 = northEastZ;
 		}
+
 		if (northZ < i9) {
 			i9 = northZ;
-		}
-		if (northZ > l9) {
+		} else if (northZ > l9) {
 			l9 = northZ;
 		}
+
 		i9 /= 14;
 		l9 /= 14;
 	}

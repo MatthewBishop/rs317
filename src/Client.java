@@ -55,8 +55,8 @@ public final class Client extends GameApplet {
 	private static final BigInteger RSA_EXPONENT = new BigInteger("65537");
 	private static final BigInteger RSA_MODULUS = new BigInteger(
 			"143690958001225849100503496893758066948984921380482659564113596152800934352119496873386875214251264258425208995167316497331786595942754290983849878549630226741961610780416197036711585670124061149988186026407785250364328460839202438651793652051153157765358767514800252431284681765433239888090564804146588087023");
-	private static int[] SKILL_EXPERIENCE;
-	private static String VALID_INPUT_CHARACTERS = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!\"\243$%^&*()-_=+[{]};:'@#~,<.>/?\\| ";
+	private static final int[] SKILL_EXPERIENCE;
+	private static final String VALID_INPUT_CHARACTERS = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!\"\243$%^&*()-_=+[{]};:'@#~,<.>/?\\| ";
 
 	static {
 		SKILL_EXPERIENCE = new int[99];
@@ -132,6 +132,7 @@ public final class Client extends GameApplet {
 			Client client = new Client();
 			client.initFrame(503, 765);
 		} catch (Exception e) {
+			e.printStackTrace();
 		}
 	}
 
@@ -186,7 +187,7 @@ public final class Client extends GameApplet {
 	MouseCapturer mouseCapturer;
 	int[] npcList = new int[16384];
 	int[] playerList = new int[2048];
-	Index[] resourceCaches;
+	Index[] indices;
 	String selectedItemName;
 	String selectedSpellName;
 	boolean wasFocused;
@@ -475,8 +476,8 @@ public final class Client extends GameApplet {
 	private Buffer loginBuffer = Buffer.create();
 	private int loginFailures;
 	private int loginInputLine;
-	private String loginMessage1 = "";
-	private String loginMessage2 = "";
+	private String firstLoginMessage = "";
+	private String secondLoginMessage = "";
 	private int loginScreenStage;
 	private boolean maleAvatar;
 	private IndexedImage mapBackground;
@@ -600,7 +601,7 @@ public final class Client extends GameApplet {
 		spriteDrawY = -1;
 		anIntArray968 = new int[33];
 		anIntArray969 = new int[256];
-		resourceCaches = new Index[5];
+		indices = new Index[5];
 		settings = new int[2000];
 		anInt975 = 50;
 		anIntArray976 = new int[anInt975];
@@ -828,8 +829,8 @@ public final class Client extends GameApplet {
 		int reconnectionDelay = 5;
 
 		try {
-			if (resourceCaches[0] != null) {
-				archiveBuffer = resourceCaches[0].decompress(index);
+			if (indices[0] != null) {
+				archiveBuffer = indices[0].decompress(index);
 			}
 		} catch (Exception ex) {
 		}
@@ -885,11 +886,11 @@ public final class Client extends GameApplet {
 				}
 				in.close();
 				try {
-					if (resourceCaches[0] != null) {
-						resourceCaches[0].put(archiveBuffer, index, archiveBuffer.length);
+					if (indices[0] != null) {
+						indices[0].put(archiveBuffer, index, archiveBuffer.length);
 					}
 				} catch (Exception _ex) {
-					resourceCaches[0] = null;
+					indices[0] = null;
 				}
 				indexCRC.reset();
 				indexCRC.update(archiveBuffer);
@@ -1404,12 +1405,12 @@ public final class Client extends GameApplet {
 			boldFont.shadowCentre(buttonX, buttonY + 5, "Existing User", true, 0xffffff);
 		} else if (loginScreenStage == 2) {
 			int y = c1 / 2 - 40;
-			if (loginMessage1.length() > 0) {
-				boldFont.shadowCentre(x / 2, y - 15, loginMessage1, true, 0xffff00);
-				boldFont.shadowCentre(x / 2, y, loginMessage2, true, 0xffff00);
+			if (firstLoginMessage.length() > 0) {
+				boldFont.shadowCentre(x / 2, y - 15, firstLoginMessage, true, 0xffff00);
+				boldFont.shadowCentre(x / 2, y, secondLoginMessage, true, 0xffff00);
 				y += 30;
 			} else {
-				boldFont.shadowCentre(x / 2, y - 7, loginMessage2, true, 0xffff00);
+				boldFont.shadowCentre(x / 2, y - 7, secondLoginMessage, true, 0xffff00);
 				y += 30;
 			}
 			boldFont.shadow(x / 2 - 90, y, "Username: " + username + (loginInputLine == 0 & tick % 40 < 20 ? "@yel@|" : ""),
@@ -1509,6 +1510,7 @@ public final class Client extends GameApplet {
 				} else if (instruction == 4) {
 					Widget other = Widget.widgets[script[counter++]];
 					int item = script[counter++];
+
 					if (item >= 0 && item < ItemDefinition.count && (!ItemDefinition.lookup(item).members || membersServer)) {
 						for (int slot = 0; slot < other.inventoryIds.length; slot++) {
 							if (other.inventoryIds[slot] == item + 1) {
@@ -1597,17 +1599,18 @@ public final class Client extends GameApplet {
 
 	@Override
 	public final AppletContext getAppletContext() {
-		if (SignLink.mainApp != null) {
-			return SignLink.mainApp.getAppletContext();
+		if (SignLink.applet != null) {
+			return SignLink.applet.getAppletContext();
 		}
 		return super.getAppletContext();
 	}
 
 	@Override
 	public final URL getCodeBase() {
-		if (SignLink.mainApp != null) {
-			return SignLink.mainApp.getCodeBase();
+		if (SignLink.applet != null) {
+			return SignLink.applet.getCodeBase();
 		}
+
 		try {
 			if (super.frame != null) {
 				return new URL("http://127.0.0.1:" + (80 + portOffset));
@@ -1624,7 +1627,7 @@ public final class Client extends GameApplet {
 	 * @return The string.
 	 */
 	public final String getDisplayableAmountString(int value) {
-		if (value < 999999999) { // 999,999,999
+		if (value < 999999999) {
 			return String.valueOf(value);
 		}
 		return "*";
@@ -1632,74 +1635,76 @@ public final class Client extends GameApplet {
 
 	@Override
 	public final Component getFrame() {
-		if (SignLink.mainApp != null) {
-			return SignLink.mainApp;
-		}
-		if (super.frame != null) {
+		if (SignLink.applet != null) {
+			return SignLink.applet;
+		} else if (super.frame != null) {
 			return super.frame;
 		}
+
 		return this;
 	}
 
 	public final String getHost() {
-		if (SignLink.mainApp != null) {
-			return SignLink.mainApp.getDocumentBase().getHost().toLowerCase();
-		}
-		if (super.frame != null) {
+		if (SignLink.applet != null) {
+			return SignLink.applet.getDocumentBase().getHost().toLowerCase();
+		} else if (super.frame != null) {
 			return "runescape.com";
 		}
+
 		return super.getDocumentBase().getHost().toLowerCase();
 	}
 
 	@Override
-	public final String getParameter(String s) {
-		if (SignLink.mainApp != null) {
-			return SignLink.mainApp.getParameter(s);
+	public final String getParameter(String parameter) {
+		if (SignLink.applet != null) {
+			return SignLink.applet.getParameter(parameter);
 		}
-		return super.getParameter(s);
+
+		return super.getParameter(parameter);
 	}
 
-	public final void ignorePlayer(long encodedUsername) {
-		if (encodedUsername == 0L) {
+	public final void ignorePlayer(long name) {
+		if (name == 0L) {
 			return;
 		}
 		if (ignoredCount >= 100) {
 			addChatMessage(0, "Your ignore list is full. Max of 100 hit", "");
 			return;
 		}
-		String s = StringUtils.format(StringUtils.decodeBase37(encodedUsername));
-		for (int j = 0; j < ignoredCount; j++) {
-			if (ignoredPlayers[j] == encodedUsername) {
+		String s = StringUtils.format(StringUtils.decodeBase37(name));
+		for (int index = 0; index < ignoredCount; index++) {
+			if (ignoredPlayers[index] == name) {
 				addChatMessage(0, s + " is already on your ignore list", "");
 				return;
 			}
 		}
 
 		for (int k = 0; k < friendCount; k++) {
-			if (friends[k] == encodedUsername) {
+			if (friends[k] == name) {
 				addChatMessage(0, "Please remove " + s + " from your friend list first", "");
 				return;
 			}
 		}
 
-		ignoredPlayers[ignoredCount++] = encodedUsername;
+		ignoredPlayers[ignoredCount++] = name;
 		redrawTabArea = true;
 		outgoing.writeOpcode(133);
-		outgoing.writeLong(encodedUsername);
+		outgoing.writeLong(name);
 	}
 
 	@Override
 	public final void init() {
 		nodeId = Integer.parseInt(getParameter("nodeid"));
 		portOffset = Integer.parseInt(getParameter("portoff"));
-		String s = getParameter("lowmem");
-		if (s != null && s.equals("1")) {
+		String lowMemory = getParameter("lowmem");
+		if (lowMemory != null && lowMemory.equals("1")) {
 			setLowMemory();
 		} else {
 			setHighMemory();
 		}
-		String s1 = getParameter("free");
-		if (s1 != null && s1.equals("1")) {
+		String free = getParameter("free");
+
+		if (free != null && free.equals("1")) {
 			membersServer = false;
 		} else {
 			membersServer = true;
@@ -1711,8 +1716,8 @@ public final class Client extends GameApplet {
 		if (s == null) {
 			return false;
 		}
-		for (int i = 0; i < friendCount; i++) {
-			if (s.equalsIgnoreCase(friendUsernames[i])) {
+		for (int index = 0; index < friendCount; index++) {
+			if (s.equalsIgnoreCase(friendUsernames[index])) {
 				return true;
 			}
 		}
@@ -1733,6 +1738,7 @@ public final class Client extends GameApplet {
 		clientLoaded = true;
 		boolean validHost = false;
 		String host = getHost();
+
 		if (host.endsWith("jagex.com")) {
 			validHost = true;
 		}
@@ -1757,13 +1763,15 @@ public final class Client extends GameApplet {
 		if (host.endsWith("127.0.0.1")) {
 			validHost = true;
 		}
+
 		if (!validHost) {
 			unableToLoad = true;
 			return;
 		}
+
 		if (SignLink.cache != null) {
-			for (int i = 0; i < 5; i++) {
-				resourceCaches[i] = new Index(SignLink.indices[i], SignLink.cache, i + 1, 0x7a120);
+			for (int index = 0; index < 5; index++) {
+				indices[index] = new Index(SignLink.indices[index], SignLink.cache, index + 1, 0x7a120);
 			}
 
 		}
@@ -1864,7 +1872,7 @@ public final class Client extends GameApplet {
 				}
 			}
 
-			if (resourceCaches[0] != null) {
+			if (indices[0] != null) {
 				drawLoadingText(75, "Requesting maps");
 				provider.provide(3, provider.resolve(47, 48, 0));
 				provider.provide(3, provider.resolve(47, 48, 1));
@@ -2074,8 +2082,8 @@ public final class Client extends GameApplet {
 				Track.load(new Buffer(data));
 			}
 			drawLoadingText(95, "Unpacking interfaces");
-			Font typefaces[] = { smallFont, frameFont, boldFont, aClass30_Sub2_Sub1_Sub4_1273 };
-			Widget.load(interfaceArchive, graphicsArchive, typefaces);
+			Font[] fonts = { smallFont, frameFont, boldFont, aClass30_Sub2_Sub1_Sub4_1273 };
+			Widget.load(interfaceArchive, graphicsArchive, fonts);
 
 			drawLoadingText(100, "Preparing game engine");
 			for (int y = 0; y < 33; y++) {
@@ -2152,24 +2160,25 @@ public final class Client extends GameApplet {
 		SignLink.error = name;
 		try {
 			if (!reconnecting) {
-				loginMessage1 = "";
-				loginMessage2 = "Connecting to server...";
+				firstLoginMessage = "";
+				secondLoginMessage = "Connecting to server...";
 				drawLoginScreen(true);
 			}
+
 			primary = new BufferedConnection(this, openSocket(43594 + portOffset));
-			long encodedName = StringUtils.encodeBase37(name);
-			int nameHash = (int) (encodedName >> 16 & 31L);
+			long encoded = StringUtils.encodeBase37(name);
+			int nameHash = (int) (encoded >> 16 & 31L);
 			outgoing.position = 0;
 			outgoing.writeByte(14);
 			outgoing.writeByte(nameHash);
 			primary.write(outgoing.payload, 2, 0);
-			for (int j = 0; j < 8; j++) {
+			for (int i = 0; i < 8; i++) {
 				primary.read();
 			}
 
-			int responseCode = primary.read();
-			int i1 = responseCode;
-			if (responseCode == 0) {
+			int response = primary.read();
+			int copy = response;
+			if (response == 0) {
 				primary.read(incomingBuffer.payload, 0, 8);
 				incomingBuffer.position = 0;
 				serverSeed = incomingBuffer.readLong();
@@ -2198,29 +2207,29 @@ public final class Client extends GameApplet {
 				loginBuffer.writeByte(255); // magic number
 				loginBuffer.writeShort(317); // revision
 				loginBuffer.writeByte(lowMemory ? 1 : 0);
-				for (int l1 = 0; l1 < 9; l1++) {
-					loginBuffer.writeInt(archiveCRCs[l1]);
+				for (int index = 0; index < 9; index++) {
+					loginBuffer.writeInt(archiveCRCs[index]);
 				}
 
 				loginBuffer.writeBytes(outgoing.payload, 0, outgoing.position);
 				outgoing.encryption = new IsaacCipher(seed);
-				for (int j2 = 0; j2 < 4; j2++) {
-					seed[j2] += 50;
+				for (int index = 0; index < 4; index++) {
+					seed[index] += 50;
 				}
 
 				encryption = new IsaacCipher(seed);
 				primary.write(loginBuffer.payload, loginBuffer.position, 0);
-				responseCode = primary.read();
+				response = primary.read();
 			}
-			if (responseCode == 1) {
+
+			if (response == 1) {
 				try {
 					Thread.sleep(2000L);
 				} catch (Exception _ex) {
 				}
+
 				login(name, password, reconnecting);
-				return;
-			}
-			if (responseCode == 2) {
+			} else if (response == 2) {
 				playerPrivelage = primary.read();
 				flaggedAccount = primary.read() == 1;
 				aLong1220 = 0L;
@@ -2243,8 +2252,8 @@ public final class Client extends GameApplet {
 				menuActionRow = 0;
 				menuOpen = false;
 				super.timeIdle = 0;
-				for (int j1 = 0; j1 < 100; j1++) {
-					chatMessages[j1] = null;
+				for (int index = 0; index < 100; index++) {
+					chatMessages[index] = null;
 				}
 
 				selectedItemId = 0;
@@ -2263,13 +2272,13 @@ public final class Client extends GameApplet {
 				destinationY = 0;
 				playerCount = 0;
 				npcCount = 0;
-				for (int i2 = 0; i2 < maximumPlayers; i2++) {
-					players[i2] = null;
-					playerSynchronizationBuffers[i2] = null;
+				for (int index = 0; index < maximumPlayers; index++) {
+					players[index] = null;
+					playerSynchronizationBuffers[index] = null;
 				}
 
-				for (int k2 = 0; k2 < 16384; k2++) {
-					npcs[k2] = null;
+				for (int index = 0; index < 16384; index++) {
+					npcs[index] = null;
 				}
 
 				localPlayer = players[internalLocalPlayerIndex] = new Player();
@@ -2301,13 +2310,13 @@ public final class Client extends GameApplet {
 				flashingSidebarId = -1;
 				maleAvatar = true;
 				changeCharacterGender();
-				for (int j3 = 0; j3 < 5; j3++) {
-					characterDesignColours[j3] = 0;
+				for (int index = 0; index < 5; index++) {
+					characterDesignColours[index] = 0;
 				}
 
-				for (int l3 = 0; l3 < 5; l3++) {
-					aStringArray1127[l3] = null;
-					aBooleanArray1128[l3] = false;
+				for (int index = 0; index < 5; index++) {
+					aStringArray1127[index] = null;
+					aBooleanArray1128[index] = false;
 				}
 
 				anInt1175 = 0;
@@ -2319,69 +2328,43 @@ public final class Client extends GameApplet {
 				anInt1155 = 0;
 				anInt1226 = 0;
 				drawScreen();
-				return;
-			}
-			if (responseCode == 3) {
-				loginMessage1 = "";
-				loginMessage2 = "Invalid username or password.";
-				return;
-			}
-			if (responseCode == 4) {
-				loginMessage1 = "Your account has been disabled.";
-				loginMessage2 = "Please check your message-centre for details.";
-				return;
-			}
-			if (responseCode == 5) {
-				loginMessage1 = "Your account is already logged in.";
-				loginMessage2 = "Try again in 60 secs...";
-				return;
-			}
-			if (responseCode == 6) {
-				loginMessage1 = "RuneScape has been updated!";
-				loginMessage2 = "Please reload this page.";
-				return;
-			}
-			if (responseCode == 7) {
-				loginMessage1 = "This world is full.";
-				loginMessage2 = "Please use a different world.";
-				return;
-			}
-			if (responseCode == 8) {
-				loginMessage1 = "Unable to connect.";
-				loginMessage2 = "Login server offline.";
-				return;
-			}
-			if (responseCode == 9) {
-				loginMessage1 = "Login limit exceeded.";
-				loginMessage2 = "Too many connections from your address.";
-				return;
-			}
-			if (responseCode == 10) {
-				loginMessage1 = "Unable to connect.";
-				loginMessage2 = "Bad session id.";
-				return;
-			}
-			if (responseCode == 11) {
-				loginMessage2 = "Login server rejected session.";
-				loginMessage2 = "Please try again.";
-				return;
-			}
-			if (responseCode == 12) {
-				loginMessage1 = "You need a members account to login to this world.";
-				loginMessage2 = "Please subscribe, or use a different world.";
-				return;
-			}
-			if (responseCode == 13) {
-				loginMessage1 = "Could not complete login.";
-				loginMessage2 = "Please try using a different world.";
-				return;
-			}
-			if (responseCode == 14) {
-				loginMessage1 = "The server is being updated.";
-				loginMessage2 = "Please wait 1 minute and try again.";
-				return;
-			}
-			if (responseCode == 15) {
+			} else if (response == 3) {
+				firstLoginMessage = "";
+				secondLoginMessage = "Invalid username or password.";
+			} else if (response == 4) {
+				firstLoginMessage = "Your account has been disabled.";
+				secondLoginMessage = "Please check your message-centre for details.";
+			} else if (response == 5) {
+				firstLoginMessage = "Your account is already logged in.";
+				secondLoginMessage = "Try again in 60 secs...";
+			} else if (response == 6) {
+				firstLoginMessage = "RuneScape has been updated!";
+				secondLoginMessage = "Please reload this page.";
+			} else if (response == 7) {
+				firstLoginMessage = "This world is full.";
+				secondLoginMessage = "Please use a different world.";
+			} else if (response == 8) {
+				firstLoginMessage = "Unable to connect.";
+				secondLoginMessage = "Login server offline.";
+			} else if (response == 9) {
+				firstLoginMessage = "Login limit exceeded.";
+				secondLoginMessage = "Too many connections from your address.";
+			} else if (response == 10) {
+				firstLoginMessage = "Unable to connect.";
+				secondLoginMessage = "Bad session id.";
+			} else if (response == 11) {
+				secondLoginMessage = "Login server rejected session.";
+				secondLoginMessage = "Please try again.";
+			} else if (response == 12) {
+				firstLoginMessage = "You need a members account to login to this world.";
+				secondLoginMessage = "Please subscribe, or use a different world.";
+			} else if (response == 13) {
+				firstLoginMessage = "Could not complete login.";
+				secondLoginMessage = "Please try using a different world.";
+			} else if (response == 14) {
+				firstLoginMessage = "The server is being updated.";
+				secondLoginMessage = "Please wait 1 minute and try again.";
+			} else if (response == 15) {
 				loggedIn = true;
 				outgoing.position = 0;
 				incomingBuffer.position = 0;
@@ -2395,27 +2378,19 @@ public final class Client extends GameApplet {
 				menuActionRow = 0;
 				menuOpen = false;
 				loadingStartTime = System.currentTimeMillis();
-				return;
-			}
-			if (responseCode == 16) {
-				loginMessage1 = "Login attempts exceeded.";
-				loginMessage2 = "Please wait 1 minute and try again.";
-				return;
-			}
-			if (responseCode == 17) {
-				loginMessage1 = "You are standing in a members-only area.";
-				loginMessage2 = "To play on this world move to a free area first";
-				return;
-			}
-			if (responseCode == 20) {
-				loginMessage1 = "Invalid loginserver requested";
-				loginMessage2 = "Please try using a different world.";
-				return;
-			}
-			if (responseCode == 21) {
+			} else if (response == 16) {
+				firstLoginMessage = "Login attempts exceeded.";
+				secondLoginMessage = "Please wait 1 minute and try again.";
+			} else if (response == 17) {
+				firstLoginMessage = "You are standing in a members-only area.";
+				secondLoginMessage = "To play on this world move to a free area first";
+			} else if (response == 20) {
+				firstLoginMessage = "Invalid loginserver requested";
+				secondLoginMessage = "Please try using a different world.";
+			} else if (response == 21) {
 				for (int time = primary.read(); time >= 0; time--) {
-					loginMessage1 = "You have only just left another world";
-					loginMessage2 = "Your profile will be transferred in: " + time + " seconds";
+					firstLoginMessage = "You have only just left another world";
+					secondLoginMessage = "Your profile will be transferred in: " + time + " seconds";
 					drawLoginScreen(true);
 					try {
 						Thread.sleep(1000L);
@@ -2424,10 +2399,8 @@ public final class Client extends GameApplet {
 				}
 
 				login(name, password, reconnecting);
-				return;
-			}
-			if (responseCode == -1) {
-				if (i1 == 0) {
+			} else if (response == -1) {
+				if (copy == 0) {
 					if (loginFailures < 2) {
 						try {
 							Thread.sleep(2000L);
@@ -2437,22 +2410,26 @@ public final class Client extends GameApplet {
 						login(name, password, reconnecting);
 						return;
 					}
-					loginMessage1 = "No response from loginserver";
-					loginMessage2 = "Please wait 1 minute and try again.";
+
+					firstLoginMessage = "No response from loginserver";
+					secondLoginMessage = "Please wait 1 minute and try again.";
 					return;
 				}
-				loginMessage1 = "No response from server";
-				loginMessage2 = "Please try using a different world.";
+
+				firstLoginMessage = "No response from server";
+				secondLoginMessage = "Please try using a different world.";
 				return;
 			}
-			System.out.println("response:" + responseCode);
-			loginMessage1 = "Unexpected server response";
-			loginMessage2 = "Please try using a different world.";
+
+			System.out.println("response:" + response);
+			firstLoginMessage = "Unexpected server response";
+			secondLoginMessage = "Please try using a different world.";
 			return;
-		} catch (IOException _ex) {
-			loginMessage1 = "";
+		} catch (IOException ex) {
+			firstLoginMessage = "";
 		}
-		loginMessage2 = "Error connecting to server.";
+
+		secondLoginMessage = "Error connecting to server.";
 	}
 
 	@Override
@@ -2464,6 +2441,7 @@ public final class Client extends GameApplet {
 		if (mob.rotation == 0) {
 			return;
 		}
+
 		if (mob.interactingMob != -1 && mob.interactingMob < 32768) {
 			Npc npc = npcs[mob.interactingMob];
 			if (npc != null) {
@@ -2604,7 +2582,7 @@ public final class Client extends GameApplet {
 			return true;
 		}
 		if (row >= 401 && row <= 500) {
-			menuActionTexts[menuActionRow] = "Remove @whi@" + widget.customisableText;
+			menuActionTexts[menuActionRow] = "Remove @whi@" + widget.hiddenText;
 			anIntArray1093[menuActionRow] = 322;
 			menuActionRow++;
 			return true;
@@ -2613,7 +2591,7 @@ public final class Client extends GameApplet {
 	}
 
 	public final void method105(int j, int x, Widget widget, int y) {
-		if (widget.anInt262 != 0 || widget.children == null) {
+		if (widget.type != 0 || widget.children == null) {
 			return;
 		}
 		if (widget.aBoolean266 && anInt1026 != widget.id && anInt1048 != widget.id && anInt1039 != widget.id) {
@@ -2626,35 +2604,35 @@ public final class Client extends GameApplet {
 		Raster.setBounds(y + widget.height, x, x + widget.width, y);
 		int childCount = widget.children.length;
 		for (int childIndex = 0; childIndex < childCount; childIndex++) {
-			int currentX = widget.anIntArray241[childIndex] + x;
-			int currentY = widget.anIntArray272[childIndex] + y - j;
+			int currentX = widget.childX[childIndex] + x;
+			int currentY = widget.childY[childIndex] + y - j;
 			Widget child = Widget.widgets[widget.children[childIndex]];
 			currentX += child.horizontalDrawOffset;
 			currentY += child.verticalDrawOffset;
 			if (child.anInt214 > 0) {
 				method75(child);
 			}
-			if (child.anInt262 == 0) {
-				if (child.scrollPosition > child.anInt261 - child.height) {
-					child.scrollPosition = child.anInt261 - child.height;
+			if (child.type == 0) {
+				if (child.scrollPosition > child.scrollLimit - child.height) {
+					child.scrollPosition = child.scrollLimit - child.height;
 				}
 				if (child.scrollPosition < 0) {
 					child.scrollPosition = 0;
 				}
 				method105(child.scrollPosition, currentX, child, currentY);
-				if (child.anInt261 > child.height) {
-					method30(child.height, child.scrollPosition, currentY, currentX + child.width, child.anInt261);
+				if (child.scrollLimit > child.height) {
+					method30(child.height, child.scrollPosition, currentY, currentX + child.width, child.scrollLimit);
 				}
-			} else if (child.anInt262 != 1) {
-				if (child.anInt262 == 2) {
+			} else if (child.type != 1) {
+				if (child.type == 2) {
 					int item = 0;
 					for (int childY = 0; childY < child.height; childY++) {
 						for (int childX = 0; childX < child.width; childX++) {
-							int componentX = currentX + childX * (32 + child.anInt231);
-							int componentY = currentY + childY * (32 + child.anInt244);
+							int componentX = currentX + childX * (32 + child.spritePaddingX);
+							int componentY = currentY + childY * (32 + child.spritePaddingY);
 							if (item < 20) {
-								componentX += child.anIntArray215[item];
-								componentY += child.anIntArray247[item];
+								componentX += child.spriteX[item];
+								componentY += child.spriteY[item];
 							}
 							if (child.inventoryIds[item] > 0) {
 								int k6 = 0;
@@ -2695,13 +2673,13 @@ public final class Client extends GameApplet {
 												anInt1088 += i10;
 											}
 											if (componentY + j7 + 32 > Raster.clipTop
-													&& widget.scrollPosition < widget.anInt261 - widget.height) {
+													&& widget.scrollPosition < widget.scrollLimit - widget.height) {
 												int j10 = tickDelta * (componentY + j7 + 32 - Raster.clipTop) / 3;
 												if (j10 > tickDelta * 10) {
 													j10 = tickDelta * 10;
 												}
-												if (j10 > widget.anInt261 - widget.height - widget.scrollPosition) {
-													j10 = widget.anInt261 - widget.height - widget.scrollPosition;
+												if (j10 > widget.scrollLimit - widget.height - widget.scrollPosition) {
+													j10 = widget.scrollLimit - widget.height - widget.scrollPosition;
 												}
 												widget.scrollPosition += j10;
 												anInt1088 -= j10;
@@ -2720,8 +2698,8 @@ public final class Client extends GameApplet {
 										}
 									}
 								}
-							} else if (child.wornIcons != null && item < 20) {
-								DirectSprite sprite = child.wornIcons[item];
+							} else if (child.sprites != null && item < 20) {
+								DirectSprite sprite = child.sprites[item];
 								if (sprite != null) {
 									sprite.drawSprite(componentX, componentY);
 								}
@@ -2730,7 +2708,7 @@ public final class Client extends GameApplet {
 						}
 					}
 
-				} else if (child.anInt262 == 3) {
+				} else if (child.type == 3) {
 					boolean flag = false;
 					if (anInt1039 == child.id || anInt1048 == child.id || anInt1026 == child.id) {
 						flag = true;
@@ -2747,32 +2725,34 @@ public final class Client extends GameApplet {
 							colour = child.anInt216;
 						}
 					}
-					if (child.aByte254 == 0) {
+
+					if (child.alpha == 0) {
 						if (child.filled) {
 							Raster.fillRectangle(currentX, currentY, child.height, child.width, colour);
 						} else {
 							Raster.drawRectangle(currentX, currentY, child.width, child.height, colour);
 						}
 					} else if (child.filled) {
-						Raster.method335(currentX, currentY, child.width, child.height, colour, 256 - (child.aByte254 & 0xff));
+						Raster.method335(currentX, currentY, child.width, child.height, colour, 256 - (child.alpha & 0xff));
 					} else {
-						Raster.method338(currentX, currentY, child.width, child.height, colour, 256 - (child.aByte254 & 0xff));
+						Raster.method338(currentX, currentY, child.width, child.height, colour, 256 - (child.alpha & 0xff));
 					}
-				} else if (child.anInt262 == 4) {
+				} else if (child.type == 4) {
 					Font font = child.font;
-					String text = child.customisableText;
+					String text = child.hiddenText;
 					boolean flag1 = false;
 					if (anInt1039 == child.id || anInt1048 == child.id || anInt1026 == child.id) {
 						flag1 = true;
 					}
 					int colour;
+
 					if (method131(child)) {
 						colour = child.anInt219;
 						if (flag1 && child.anInt239 != 0) {
 							colour = child.anInt239;
 						}
-						if (child.aString228.length() > 0) {
-							text = child.aString228;
+						if (child.text.length() > 0) {
+							text = child.text;
 						}
 					} else {
 						colour = child.colour;
@@ -2844,14 +2824,14 @@ public final class Client extends GameApplet {
 							s1 = text;
 							text = "";
 						}
-						if (child.aBoolean223) {
-							font.shadowCentre(currentX + child.width / 2, l6, s1, child.aBoolean268, colour);
+						if (child.centeredText) {
+							font.shadowCentre(currentX + child.width / 2, l6, s1, child.shadowedText, colour);
 						} else {
-							font.shadow(currentX, l6, s1, child.aBoolean268, colour);
+							font.shadow(currentX, l6, s1, child.shadowedText, colour);
 						}
 					}
 
-				} else if (child.anInt262 == 5) {
+				} else if (child.type == 5) {
 					DirectSprite sprite;
 
 					if (method131(child)) {
@@ -2863,7 +2843,7 @@ public final class Client extends GameApplet {
 					if (sprite != null) {
 						sprite.drawSprite(currentX, currentY);
 					}
-				} else if (child.anInt262 == 6) {
+				} else if (child.type == 6) {
 					int k3 = Rasterizer.originViewX;
 					int j4 = Rasterizer.originViewY;
 					Rasterizer.originViewX = currentX + child.width / 2;
@@ -2892,7 +2872,7 @@ public final class Client extends GameApplet {
 					}
 					Rasterizer.originViewX = k3;
 					Rasterizer.originViewY = j4;
-				} else if (child.anInt262 == 7) {
+				} else if (child.type == 7) {
 					Font font = child.font;
 					int slot = 0;
 					for (int j5 = 0; j5 < child.height; j5++) {
@@ -2903,12 +2883,12 @@ public final class Client extends GameApplet {
 								if (definition.stackable || child.inventoryAmounts[slot] != 1) {
 									name = name + " x" + getFullAmountText(child.inventoryAmounts[slot]);
 								}
-								int i9 = currentX + i6 * (115 + child.anInt231);
-								int k9 = currentY + j5 * (12 + child.anInt244);
-								if (child.aBoolean223) {
-									font.shadowCentre(i9 + child.width / 2, k9, name, child.aBoolean268, child.colour);
+								int i9 = currentX + i6 * (115 + child.spritePaddingX);
+								int k9 = currentY + j5 * (12 + child.spritePaddingY);
+								if (child.centeredText) {
+									font.shadowCentre(i9 + child.width / 2, k9, name, child.shadowedText, child.colour);
 								} else {
-									font.shadow(i9, k9, name, child.aBoolean268, child.colour);
+									font.shadow(i9, k9, name, child.shadowedText, child.colour);
 								}
 							}
 							slot++;
@@ -3328,6 +3308,7 @@ public final class Client extends GameApplet {
 		} else {
 			option = menuActionTexts[menuActionRow - 1];
 		}
+
 		if (menuActionRow > 2) {
 			option = option + "@whi@ / " + (menuActionRow - 2) + " more options";
 		}
@@ -3360,7 +3341,7 @@ public final class Client extends GameApplet {
 		for (int j5 = 0; j5 < anInt1071; j5++) {
 			int k = anIntArray1072[j5] * 4 + 2 - localPlayer.worldX / 32;
 			int i3 = anIntArray1073[j5] * 4 + 2 - localPlayer.worldY / 32;
-			method141(aClass30_Sub2_Sub1_Sub1Array1140[j5], k, i3);
+			drawOnMinimap(aClass30_Sub2_Sub1_Sub1Array1140[j5], k, i3);
 		}
 
 		for (int x = 0; x < 104; x++) {
@@ -3369,7 +3350,7 @@ public final class Client extends GameApplet {
 				if (items != null) {
 					int l = x * 4 + 2 - localPlayer.worldX / 32;
 					int j3 = y * 4 + 2 - localPlayer.worldY / 32;
-					method141(itemMapdot, l, j3);
+					drawOnMinimap(itemMapdot, l, j3);
 				}
 			}
 		}
@@ -3382,9 +3363,9 @@ public final class Client extends GameApplet {
 					definition = definition.morph();
 				}
 				if (definition != null && definition.drawMinimapDot && definition.clickable) {
-					int i1 = npc.worldX / 32 - localPlayer.worldX / 32;
-					int k3 = npc.worldY / 32 - localPlayer.worldY / 32;
-					method141(npcMapdot, i1, k3);
+					int x = npc.worldX / 32 - localPlayer.worldX / 32;
+					int y = npc.worldY / 32 - localPlayer.worldY / 32;
+					drawOnMinimap(npcMapdot, x, y);
 				}
 			}
 		}
@@ -3410,11 +3391,11 @@ public final class Client extends GameApplet {
 					team = true;
 				}
 				if (friend) {
-					method141(friendMapdot, x, y);
+					drawOnMinimap(friendMapdot, x, y);
 				} else if (team) {
-					method141(teamMapdot, x, y);
+					drawOnMinimap(teamMapdot, x, y);
 				} else {
-					method141(playerMapdot, x, y);
+					drawOnMinimap(playerMapdot, x, y);
 				}
 			}
 		}
@@ -3445,8 +3426,9 @@ public final class Client extends GameApplet {
 		if (destinationX != 0) {
 			int j2 = destinationX * 4 + 2 - localPlayer.worldX / 32;
 			int l4 = destinationY * 4 + 2 - localPlayer.worldY / 32;
-			method141(firstMapmarker, j2, l4);
+			drawOnMinimap(firstMapmarker, j2, l4);
 		}
+
 		Raster.fillRectangle(97, 78, 3, 3, 0xffffff);
 		aClass15_1165.initializeRasterizer();
 	}
@@ -3536,28 +3518,31 @@ public final class Client extends GameApplet {
 	}
 
 	public final boolean method131(Widget widget) {
-		if (widget.anIntArray245 == null) {
+		if (widget.scriptOperators == null) {
 			return false;
 		}
 
-		for (int id = 0; id < widget.anIntArray245.length; id++) {
+		for (int id = 0; id < widget.scriptOperators.length; id++) {
 			int result = executeScript(widget, id);
-			int k = widget.anIntArray212[id];
+			int k = widget.anIntArray212[id]; // expected result? default?
+			int operator = widget.scriptOperators[id];
 
-			if (widget.anIntArray245[id] == 2) {
+			if (operator == 1) {
+				if (result != k) {
+					return false;
+				}
+			} else if (operator == 2) {
 				if (result >= k) {
 					return false;
 				}
-			} else if (widget.anIntArray245[id] == 3) {
+			} else if (operator == 3) {
 				if (result <= k) {
 					return false;
 				}
-			} else if (widget.anIntArray245[id] == 4) {
+			} else if (operator == 4) {
 				if (result == k) {
 					return false;
 				}
-			} else if (result != k) {
-				return false;
 			}
 		}
 
@@ -3565,7 +3550,7 @@ public final class Client extends GameApplet {
 	}
 
 	public final void method133() {
-		char c = '\u0100';
+		int c = 256;
 		if (anInt1040 > 0) {
 			for (int i = 0; i < 256; i++) {
 				if (anInt1040 > 768) {
@@ -3659,26 +3644,28 @@ public final class Client extends GameApplet {
 	public final void method136() {
 		aBoolean962 = true;
 		try {
-			long l = System.currentTimeMillis();
-			int i = 0;
-			int j = 20;
+			long start = System.currentTimeMillis();
+			int count = 0;
+			int sleep = 20;
+
 			while (aBoolean831) {
 				flameTick++;
 				method58();
 				method58();
 				method133();
-				if (++i > 10) {
-					long l1 = System.currentTimeMillis();
-					int k = (int) (l1 - l) / 10 - j;
-					j = 40 - k;
-					if (j < 5) {
-						j = 5;
+
+				if (++count > 10) {
+					long current = System.currentTimeMillis();
+					int delta = (int) (current - start) / 10 - sleep;
+					sleep = 40 - delta;
+					if (sleep < 5) {
+						sleep = 5;
 					}
-					i = 0;
-					l = l1;
+					count = 0;
+					start = current;
 				}
 				try {
-					Thread.sleep(j);
+					Thread.sleep(sleep);
 				} catch (Exception _ex) {
 				}
 			}
@@ -3687,7 +3674,7 @@ public final class Client extends GameApplet {
 		aBoolean962 = false;
 	}
 
-	public final void method141(DirectSprite sprite, int x, int y) {
+	public final void drawOnMinimap(DirectSprite sprite, int x, int y) {
 		int k = cameraYaw + anInt1209 & 0x7ff;
 		int r = x * x + y * y;
 		if (r > 6400) {
@@ -3743,6 +3730,7 @@ public final class Client extends GameApplet {
 		processNpcAdditions(false);
 		processProjectiles();
 		processAnimableObjects();
+
 		if (!oriented) {
 			int i = cameraRoll;
 			if (anInt984 / 256 > i) {
@@ -3754,12 +3742,14 @@ public final class Client extends GameApplet {
 			int k = cameraYaw + anInt896 & 0x7ff;
 			method144(600 + i * 3, i, anInt1014, method42(localPlayer.worldX, localPlayer.worldY, plane) - 50, k, anInt1015);
 		}
+
 		int j;
 		if (!oriented) {
 			j = method120();
 		} else {
 			j = method121();
 		}
+
 		int l = anInt858;
 		int i1 = anInt859;
 		int j1 = anInt860;
@@ -4048,10 +4038,10 @@ public final class Client extends GameApplet {
 						anInt1086 = 2;
 						anInt1087 = super.lastClickX;
 						anInt1088 = super.lastClickY;
-						if (Widget.widgets[id].anInt236 == openInterfaceId) {
+						if (Widget.widgets[id].parent == openInterfaceId) {
 							anInt1086 = 1;
 						}
-						if (Widget.widgets[id].anInt236 == backDialogueId) {
+						if (Widget.widgets[id].parent == backDialogueId) {
 							anInt1086 = 3;
 						}
 						return;
@@ -4360,7 +4350,7 @@ public final class Client extends GameApplet {
 	}
 
 	public final void method29(int i, Widget widget, int k, int l, int i1, int j1) {
-		if (widget.anInt262 != 0 || widget.children == null || widget.aBoolean266) {
+		if (widget.type != 0 || widget.children == null || widget.aBoolean266) {
 			return;
 		}
 		if (k < i || i1 < l || k > i + widget.width || i1 > l + widget.height) {
@@ -4368,8 +4358,8 @@ public final class Client extends GameApplet {
 		}
 		int childCount = widget.children.length;
 		for (int childIndex = 0; childIndex < childCount; childIndex++) {
-			int i2 = widget.anIntArray241[childIndex] + i;
-			int j2 = widget.anIntArray272[childIndex] + l - j1;
+			int i2 = widget.childX[childIndex] + i;
+			int j2 = widget.childY[childIndex] + l - j1;
 			Widget child = Widget.widgets[widget.children[childIndex]];
 			i2 += child.horizontalDrawOffset;
 			j2 += child.verticalDrawOffset;
@@ -4381,10 +4371,10 @@ public final class Client extends GameApplet {
 					anInt886 = child.id;
 				}
 			}
-			if (child.anInt262 == 0) {
+			if (child.type == 0) {
 				method29(i2, child, k, j2, i1, child.scrollPosition);
-				if (child.anInt261 > child.height) {
-					method65(i2 + child.width, child.height, k, i1, child, j2, true, child.anInt261, 0);
+				if (child.scrollLimit > child.height) {
+					method65(i2 + child.width, child.height, k, i1, child, j2, true, child.scrollLimit, 0);
 				}
 			} else {
 				if (child.anInt217 == 1 && k >= i2 && i1 >= j2 && k < i2 + child.width && i1 < j2 + child.height) {
@@ -4393,7 +4383,7 @@ public final class Client extends GameApplet {
 						flag = method103(child);
 					}
 					if (!flag) {
-						menuActionTexts[menuActionRow] = child.text;
+						menuActionTexts[menuActionRow] = child.hover;
 						anIntArray1093[menuActionRow] = 315;
 						anIntArray1092[menuActionRow] = child.id;
 						menuActionRow++;
@@ -4417,32 +4407,32 @@ public final class Client extends GameApplet {
 					menuActionRow++;
 				}
 				if (child.anInt217 == 4 && k >= i2 && i1 >= j2 && k < i2 + child.width && i1 < j2 + child.height) {
-					menuActionTexts[menuActionRow] = child.text;
+					menuActionTexts[menuActionRow] = child.hover;
 					anIntArray1093[menuActionRow] = 169;
 					anIntArray1092[menuActionRow] = child.id;
 					menuActionRow++;
 				}
 				if (child.anInt217 == 5 && k >= i2 && i1 >= j2 && k < i2 + child.width && i1 < j2 + child.height) {
-					menuActionTexts[menuActionRow] = child.text;
+					menuActionTexts[menuActionRow] = child.hover;
 					anIntArray1093[menuActionRow] = 646;
 					anIntArray1092[menuActionRow] = child.id;
 					menuActionRow++;
 				}
 				if (child.anInt217 == 6 && !aBoolean1149 && k >= i2 && i1 >= j2 && k < i2 + child.width && i1 < j2 + child.height) {
-					menuActionTexts[menuActionRow] = child.text;
+					menuActionTexts[menuActionRow] = child.hover;
 					anIntArray1093[menuActionRow] = 679;
 					anIntArray1092[menuActionRow] = child.id;
 					menuActionRow++;
 				}
-				if (child.anInt262 == 2) {
+				if (child.type == 2) {
 					int k2 = 0;
 					for (int l2 = 0; l2 < child.height; l2++) {
 						for (int i3 = 0; i3 < child.width; i3++) {
-							int j3 = i2 + i3 * (32 + child.anInt231);
-							int k3 = j2 + l2 * (32 + child.anInt244);
+							int j3 = i2 + i3 * (32 + child.spritePaddingX);
+							int k3 = j2 + l2 * (32 + child.spritePaddingY);
 							if (k2 < 20) {
-								j3 += child.anIntArray215[k2];
-								k3 += child.anIntArray247[k2];
+								j3 += child.spriteX[k2];
+								k3 += child.spriteY[k2];
 							}
 							if (k >= j3 && i1 >= k3 && k < j3 + 32 && i1 < k3 + 32) {
 								anInt1066 = k2;
@@ -4526,10 +4516,10 @@ public final class Client extends GameApplet {
 											}
 
 										}
-										if (child.menuActions != null) {
+										if (child.actions != null) {
 											for (int j4 = 4; j4 >= 0; j4--) {
-												if (child.menuActions[j4] != null) {
-													menuActionTexts[menuActionRow] = child.menuActions[j4] + " @lre@"
+												if (child.actions[j4] != null) {
+													menuActionTexts[menuActionRow] = child.actions[j4] + " @lre@"
 															+ definition.name;
 													if (j4 == 0) {
 														anIntArray1093[menuActionRow] = 632;
@@ -4626,7 +4616,7 @@ public final class Client extends GameApplet {
 						if (widget == null || widget.anInt214 != 600) {
 							continue;
 						}
-						anInt1178 = openInterfaceId = widget.anInt236;
+						anInt1178 = openInterfaceId = widget.parent;
 						break;
 					}
 
@@ -5302,7 +5292,7 @@ public final class Client extends GameApplet {
 		anIntArray828 = new int[32768];
 		anIntArray829 = new int[32768];
 		drawLoadingText(10, "Connecting to fileserver");
-		
+
 		if (!aBoolean831) {
 			aBoolean880 = true;
 			aBoolean831 = true;
@@ -5323,8 +5313,8 @@ public final class Client extends GameApplet {
 		if (loadingStage == 1) {
 			int j = method54();
 			if (j != 0 && System.currentTimeMillis() - loadingStartTime > 0x57e40) {
-				SignLink.reportError(username + " glcfb " + serverSeed + "," + j + "," + lowMemory + "," + resourceCaches[0]
-						+ "," + provider.remaining() + "," + plane + "," + sectorX + "," + sectorY);
+				SignLink.reportError(username + " glcfb " + serverSeed + "," + j + "," + lowMemory + "," + indices[0] + ","
+						+ provider.remaining() + "," + plane + "," + sectorX + "," + sectorY);
 				loadingStartTime = System.currentTimeMillis();
 			}
 		}
@@ -5428,7 +5418,7 @@ public final class Client extends GameApplet {
 	}
 
 	public final void method58() {
-		char c = '\u0100';
+		char c = 256;
 		for (int j = 10; j < 117; j++) {
 			int k = (int) (Math.random() * 100);
 			if (k < 50) {
@@ -5687,10 +5677,10 @@ public final class Client extends GameApplet {
 			anInt1244 = id;
 			anInt1245 = x;
 			anInt1246 = 2;
-			if (Widget.widgets[id].anInt236 == openInterfaceId) {
+			if (Widget.widgets[id].parent == openInterfaceId) {
 				anInt1246 = 1;
 			}
-			if (Widget.widgets[id].anInt236 == backDialogueId) {
+			if (Widget.widgets[id].parent == backDialogueId) {
 				anInt1246 = 3;
 			}
 		}
@@ -5780,10 +5770,10 @@ public final class Client extends GameApplet {
 			anInt1244 = id;
 			anInt1245 = x;
 			anInt1246 = 2;
-			if (Widget.widgets[id].anInt236 == openInterfaceId) {
+			if (Widget.widgets[id].parent == openInterfaceId) {
 				anInt1246 = 1;
 			}
-			if (Widget.widgets[id].anInt236 == backDialogueId) {
+			if (Widget.widgets[id].parent == backDialogueId) {
 				anInt1246 = 3;
 			}
 		}
@@ -5815,10 +5805,10 @@ public final class Client extends GameApplet {
 			anInt1244 = id;
 			anInt1245 = x;
 			anInt1246 = 2;
-			if (Widget.widgets[id].anInt236 == openInterfaceId) {
+			if (Widget.widgets[id].parent == openInterfaceId) {
 				anInt1246 = 1;
 			}
-			if (Widget.widgets[id].anInt236 == backDialogueId) {
+			if (Widget.widgets[id].parent == backDialogueId) {
 				anInt1246 = 3;
 			}
 		}
@@ -5831,10 +5821,10 @@ public final class Client extends GameApplet {
 			anInt1244 = id;
 			anInt1245 = x;
 			anInt1246 = 2;
-			if (Widget.widgets[id].anInt236 == openInterfaceId) {
+			if (Widget.widgets[id].parent == openInterfaceId) {
 				anInt1246 = 1;
 			}
-			if (Widget.widgets[id].anInt236 == backDialogueId) {
+			if (Widget.widgets[id].parent == backDialogueId) {
 				anInt1246 = 3;
 			}
 		}
@@ -5886,10 +5876,10 @@ public final class Client extends GameApplet {
 			anInt1244 = id;
 			anInt1245 = x;
 			anInt1246 = 2;
-			if (Widget.widgets[id].anInt236 == openInterfaceId) {
+			if (Widget.widgets[id].parent == openInterfaceId) {
 				anInt1246 = 1;
 			}
-			if (Widget.widgets[id].anInt236 == backDialogueId) {
+			if (Widget.widgets[id].parent == backDialogueId) {
 				anInt1246 = 3;
 			}
 		}
@@ -5902,10 +5892,10 @@ public final class Client extends GameApplet {
 			anInt1244 = id;
 			anInt1245 = x;
 			anInt1246 = 2;
-			if (Widget.widgets[id].anInt236 == openInterfaceId) {
+			if (Widget.widgets[id].parent == openInterfaceId) {
 				anInt1246 = 1;
 			}
-			if (Widget.widgets[id].anInt236 == backDialogueId) {
+			if (Widget.widgets[id].parent == backDialogueId) {
 				anInt1246 = 3;
 			}
 		}
@@ -5941,10 +5931,10 @@ public final class Client extends GameApplet {
 			anInt1244 = id;
 			anInt1245 = x;
 			anInt1246 = 2;
-			if (Widget.widgets[id].anInt236 == openInterfaceId) {
+			if (Widget.widgets[id].parent == openInterfaceId) {
 				anInt1246 = 1;
 			}
-			if (Widget.widgets[id].anInt236 == backDialogueId) {
+			if (Widget.widgets[id].parent == backDialogueId) {
 				anInt1246 = 3;
 			}
 		}
@@ -5989,10 +5979,10 @@ public final class Client extends GameApplet {
 			anInt1244 = id;
 			anInt1245 = x;
 			anInt1246 = 2;
-			if (Widget.widgets[id].anInt236 == openInterfaceId) {
+			if (Widget.widgets[id].parent == openInterfaceId) {
 				anInt1246 = 1;
 			}
-			if (Widget.widgets[id].anInt236 == backDialogueId) {
+			if (Widget.widgets[id].parent == backDialogueId) {
 				anInt1246 = 3;
 			}
 		}
@@ -6005,10 +5995,10 @@ public final class Client extends GameApplet {
 			anInt1244 = id;
 			anInt1245 = x;
 			anInt1246 = 2;
-			if (Widget.widgets[id].anInt236 == openInterfaceId) {
+			if (Widget.widgets[id].parent == openInterfaceId) {
 				anInt1246 = 1;
 			}
-			if (Widget.widgets[id].anInt236 == backDialogueId) {
+			if (Widget.widgets[id].parent == backDialogueId) {
 				anInt1246 = 3;
 			}
 		}
@@ -6045,11 +6035,12 @@ public final class Client extends GameApplet {
 			outgoing.writeOpcode(185);
 			outgoing.writeShort(id);
 			Widget widget = Widget.widgets[id];
+
 			if (widget.scripts != null && widget.scripts[0][0] == 5) {
-				int i2 = widget.scripts[0][1];
-				if (settings[i2] != widget.anIntArray212[0]) {
-					settings[i2] = widget.anIntArray212[0];
-					method33(i2);
+				int operand = widget.scripts[0][1];
+				if (settings[operand] != widget.anIntArray212[0]) {
+					settings[operand] = widget.anIntArray212[0];
+					method33(operand);
 					redrawTabArea = true;
 				}
 			}
@@ -6218,10 +6209,10 @@ public final class Client extends GameApplet {
 			anInt1244 = id;
 			anInt1245 = x;
 			anInt1246 = 2;
-			if (Widget.widgets[id].anInt236 == openInterfaceId) {
+			if (Widget.widgets[id].parent == openInterfaceId) {
 				anInt1246 = 1;
 			}
-			if (Widget.widgets[id].anInt236 == backDialogueId) {
+			if (Widget.widgets[id].parent == backDialogueId) {
 				anInt1246 = 3;
 			}
 		}
@@ -6235,10 +6226,10 @@ public final class Client extends GameApplet {
 			anInt1244 = id;
 			anInt1245 = x;
 			anInt1246 = 2;
-			if (Widget.widgets[id].anInt236 == openInterfaceId) {
+			if (Widget.widgets[id].parent == openInterfaceId) {
 				anInt1246 = 1;
 			}
-			if (Widget.widgets[id].anInt236 == backDialogueId) {
+			if (Widget.widgets[id].parent == backDialogueId) {
 				anInt1246 = 3;
 			}
 		}
@@ -6254,7 +6245,7 @@ public final class Client extends GameApplet {
 						if (element == null || element.anInt214 != 600) {
 							continue;
 						}
-						anInt1178 = openInterfaceId = element.anInt236;
+						anInt1178 = openInterfaceId = element.parent;
 						break;
 					}
 
@@ -6312,10 +6303,10 @@ public final class Client extends GameApplet {
 			anInt1244 = id;
 			anInt1245 = x;
 			anInt1246 = 2;
-			if (Widget.widgets[id].anInt236 == openInterfaceId) {
+			if (Widget.widgets[id].parent == openInterfaceId) {
 				anInt1246 = 1;
 			}
-			if (Widget.widgets[id].anInt236 == backDialogueId) {
+			if (Widget.widgets[id].parent == backDialogueId) {
 				anInt1246 = 3;
 			}
 		}
@@ -6947,17 +6938,17 @@ public final class Client extends GameApplet {
 		int j = widget.anInt214;
 		if (j >= 1 && j <= 100 || j >= 701 && j <= 800) {
 			if (j == 1 && friendServerStatus == 0) {
-				widget.customisableText = "Loading friend list";
+				widget.hiddenText = "Loading friend list";
 				widget.anInt217 = 0;
 				return;
 			}
 			if (j == 1 && friendServerStatus == 1) {
-				widget.customisableText = "Connecting to friendserver";
+				widget.hiddenText = "Connecting to friendserver";
 				widget.anInt217 = 0;
 				return;
 			}
 			if (j == 2 && friendServerStatus != 2) {
-				widget.customisableText = "Please wait...";
+				widget.hiddenText = "Please wait...";
 				widget.anInt217 = 0;
 				return;
 			}
@@ -6971,11 +6962,11 @@ public final class Client extends GameApplet {
 				j--;
 			}
 			if (j >= count) {
-				widget.customisableText = "";
+				widget.hiddenText = "";
 				widget.anInt217 = 0;
 				return;
 			}
-			widget.customisableText = friendUsernames[j];
+			widget.hiddenText = friendUsernames[j];
 			widget.anInt217 = 1;
 			return;
 		}
@@ -6990,16 +6981,16 @@ public final class Client extends GameApplet {
 				j -= 101;
 			}
 			if (j >= l) {
-				widget.customisableText = "";
+				widget.hiddenText = "";
 				widget.anInt217 = 0;
 				return;
 			}
 			if (friendWorlds[j] == 0) {
-				widget.customisableText = "@red@Offline";
+				widget.hiddenText = "@red@Offline";
 			} else if (friendWorlds[j] == nodeId) {
-				widget.customisableText = "@gre@World-" + (friendWorlds[j] - 9);
+				widget.hiddenText = "@gre@World-" + (friendWorlds[j] - 9);
 			} else {
-				widget.customisableText = "@yel@World-" + (friendWorlds[j] - 9);
+				widget.hiddenText = "@yel@World-" + (friendWorlds[j] - 9);
 			}
 			widget.anInt217 = 1;
 			return;
@@ -7009,20 +7000,20 @@ public final class Client extends GameApplet {
 			if (friendServerStatus != 2) {
 				i1 = 0;
 			}
-			widget.anInt261 = i1 * 15 + 20;
-			if (widget.anInt261 <= widget.height) {
-				widget.anInt261 = widget.height + 1;
+			widget.scrollLimit = i1 * 15 + 20;
+			if (widget.scrollLimit <= widget.height) {
+				widget.scrollLimit = widget.height + 1;
 			}
 			return;
 		}
 		if (j >= 401 && j <= 500) {
 			if ((j -= 401) == 0 && friendServerStatus == 0) {
-				widget.customisableText = "Loading ignore list";
+				widget.hiddenText = "Loading ignore list";
 				widget.anInt217 = 0;
 				return;
 			}
 			if (j == 1 && friendServerStatus == 0) {
-				widget.customisableText = "Please wait...";
+				widget.hiddenText = "Please wait...";
 				widget.anInt217 = 0;
 				return;
 			}
@@ -7031,18 +7022,18 @@ public final class Client extends GameApplet {
 				j1 = 0;
 			}
 			if (j >= j1) {
-				widget.customisableText = "";
+				widget.hiddenText = "";
 				widget.anInt217 = 0;
 				return;
 			}
-			widget.customisableText = StringUtils.format(StringUtils.decodeBase37(ignoredPlayers[j]));
+			widget.hiddenText = StringUtils.format(StringUtils.decodeBase37(ignoredPlayers[j]));
 			widget.anInt217 = 1;
 			return;
 		}
 		if (j == 503) {
-			widget.anInt261 = ignoredCount * 15 + 20;
-			if (widget.anInt261 <= widget.height) {
-				widget.anInt261 = widget.height + 1;
+			widget.scrollLimit = ignoredCount * 15 + 20;
+			if (widget.scrollLimit <= widget.height) {
+				widget.scrollLimit = widget.height + 1;
 			}
 			return;
 		}
@@ -7111,25 +7102,25 @@ public final class Client extends GameApplet {
 			return;
 		}
 		if (j == 600) {
-			widget.customisableText = reportInput;
+			widget.hiddenText = reportInput;
 			if (tick % 20 < 10) {
-				widget.customisableText += "|";
+				widget.hiddenText += "|";
 				return;
 			}
-			widget.customisableText += " ";
+			widget.hiddenText += " ";
 			return;
 		}
 		if (j == 613) {
 			if (playerPrivelage >= 1) {
 				if (reportAbuseMuteToggle) {
 					widget.colour = 0xff0000;
-					widget.customisableText = "Moderator option: Mute player for 48 hours: <ON>";
+					widget.hiddenText = "Moderator option: Mute player for 48 hours: <ON>";
 				} else {
 					widget.colour = 0xffffff;
-					widget.customisableText = "Moderator option: Mute player for 48 hours: <OFF>";
+					widget.hiddenText = "Moderator option: Mute player for 48 hours: <OFF>";
 				}
 			} else {
-				widget.customisableText = "";
+				widget.hiddenText = "";
 			}
 		}
 		if (j == 650 || j == 655) {
@@ -7142,34 +7133,34 @@ public final class Client extends GameApplet {
 				} else {
 					s = daysSinceLogin + " days ago";
 				}
-				widget.customisableText = "You last logged in " + s + " from: " + SignLink.dns;
+				widget.hiddenText = "You last logged in " + s + " from: " + SignLink.dns;
 			} else {
-				widget.customisableText = "";
+				widget.hiddenText = "";
 			}
 		}
 		if (j == 651) {
 			if (unreadMessageCount == 0) {
-				widget.customisableText = "0 unread messages";
+				widget.hiddenText = "0 unread messages";
 				widget.colour = 0xffff00;
 			}
 			if (unreadMessageCount == 1) {
-				widget.customisableText = "1 unread message";
+				widget.hiddenText = "1 unread message";
 				widget.colour = 65280;
 			}
 			if (unreadMessageCount > 1) {
-				widget.customisableText = unreadMessageCount + " unread messages";
+				widget.hiddenText = unreadMessageCount + " unread messages";
 				widget.colour = 65280;
 			}
 		}
 		if (j == 652) {
 			if (daysSinceRecoveryChange == 201) {
 				if (hasMembersCredit == 1) {
-					widget.customisableText = "@yel@This is a non-members world: @whi@Since you are a member we";
+					widget.hiddenText = "@yel@This is a non-members world: @whi@Since you are a member we";
 				} else {
-					widget.customisableText = "";
+					widget.hiddenText = "";
 				}
 			} else if (daysSinceRecoveryChange == 200) {
-				widget.customisableText = "You have not yet set any password recovery questions.";
+				widget.hiddenText = "You have not yet set any password recovery questions.";
 			} else {
 				String s1;
 				if (daysSinceRecoveryChange == 0) {
@@ -7179,36 +7170,36 @@ public final class Client extends GameApplet {
 				} else {
 					s1 = daysSinceRecoveryChange + " days ago";
 				}
-				widget.customisableText = s1 + " you changed your recovery questions";
+				widget.hiddenText = s1 + " you changed your recovery questions";
 			}
 		}
 		if (j == 653) {
 			if (daysSinceRecoveryChange == 201) {
 				if (hasMembersCredit == 1) {
-					widget.customisableText = "@whi@recommend you use a members world instead. You may use";
+					widget.hiddenText = "@whi@recommend you use a members world instead. You may use";
 				} else {
-					widget.customisableText = "";
+					widget.hiddenText = "";
 				}
 			} else if (daysSinceRecoveryChange == 200) {
-				widget.customisableText = "We strongly recommend you do so now to secure your account.";
+				widget.hiddenText = "We strongly recommend you do so now to secure your account.";
 			} else {
-				widget.customisableText = "If you do not remember making this change then cancel it immediately";
+				widget.hiddenText = "If you do not remember making this change then cancel it immediately";
 			}
 		}
 		if (j == 654) {
 			if (daysSinceRecoveryChange == 201) {
 				if (hasMembersCredit == 1) {
-					widget.customisableText = "@whi@this world but member benefits are unavailable whilst here.";
+					widget.hiddenText = "@whi@this world but member benefits are unavailable whilst here.";
 					return;
 				}
-				widget.customisableText = "";
+				widget.hiddenText = "";
 				return;
 			}
 			if (daysSinceRecoveryChange == 200) {
-				widget.customisableText = "Do this from the 'account management' area on our front webpage";
+				widget.hiddenText = "Do this from the 'account management' area on our front webpage";
 				return;
 			}
-			widget.customisableText = "Do this from the 'account management' area on our front webpage";
+			widget.hiddenText = "Do this from the 'account management' area on our front webpage";
 		}
 	}
 
@@ -7316,7 +7307,7 @@ public final class Client extends GameApplet {
 			int k2 = (int) (Math.cos(d) * 57D);
 			mapEdge.method353(83 - k2 - 20, 15, 20, 15, 256, 20, d, 94 + j2 + 4 - 10);
 		} else {
-			method141(sprite, k, j);
+			drawOnMinimap(sprite, k, j);
 		}
 	}
 
@@ -8084,7 +8075,7 @@ public final class Client extends GameApplet {
 	}
 
 	public final Socket openSocket(int port) throws IOException {
-		if (SignLink.mainApp != null) {
+		if (SignLink.applet != null) {
 			return SignLink.openSocket(port);
 		}
 
@@ -8169,7 +8160,7 @@ public final class Client extends GameApplet {
 						if (widget == null || widget.anInt214 != c) {
 							continue;
 						}
-						openInterfaceId = widget.anInt236;
+						openInterfaceId = widget.parent;
 						break;
 					}
 
@@ -8810,12 +8801,12 @@ public final class Client extends GameApplet {
 				int id = incomingBuffer.readLEUShort();
 				int scrollPosition = incomingBuffer.readUShortA();
 				Widget widget = Widget.widgets[id];
-				if (widget != null && widget.anInt262 == 0) {
+				if (widget != null && widget.type == 0) {
 					if (scrollPosition < 0) {
 						scrollPosition = 0;
 					}
-					if (scrollPosition > widget.anInt261 - widget.height) {
-						scrollPosition = widget.anInt261 - widget.height;
+					if (scrollPosition > widget.scrollLimit - widget.height) {
+						scrollPosition = widget.scrollLimit - widget.height;
 					}
 					widget.scrollPosition = scrollPosition;
 				}
@@ -8945,8 +8936,8 @@ public final class Client extends GameApplet {
 			if (opcode == 126) {
 				String text = incomingBuffer.readString();
 				int id = incomingBuffer.readUShortA();
-				Widget.widgets[id].customisableText = text;
-				if (Widget.widgets[id].anInt236 == inventoryTabIds[tabId]) {
+				Widget.widgets[id].hiddenText = text;
+				if (Widget.widgets[id].parent == inventoryTabIds[tabId]) {
 					redrawTabArea = true;
 				}
 				opcode = -1;
@@ -9393,9 +9384,9 @@ public final class Client extends GameApplet {
 			byte byte1 = buffer.readNegByte();
 			int length = buffer.readUShort(); // time in ticks until the player transforms again
 			int k18 = buffer.readUByteS();
-			int j19 = k18 >> 2;
-			int i20 = k18 & 3;
-			int type = anIntArray1177[j19];
+			int position = k18 >> 2;
+			int orientation = k18 & 3;
+			int type = anIntArray1177[position];
 			byte byte2 = buffer.readByte();
 			int id = buffer.readUShort();
 			byte byte3 = buffer.readNegByte();
@@ -9407,20 +9398,21 @@ public final class Client extends GameApplet {
 				int j22 = anIntArrayArrayArray1214[plane][x + 1][y];
 				int k22 = anIntArrayArrayArray1214[plane][x + 1][y + 1];
 				int l22 = anIntArrayArrayArray1214[plane][x][y + 1];
-				Model model = definition.modelAt(j19, i20, i22, j22, k22, l22, -1);
+				Model model = definition.modelAt(position, orientation, i22, j22, k22, l22, -1);
 				if (model != null) {
 					method130(-1, x, y, plane, type, 0, length + 1, 0, delay + 1);
 					player.objectAppearanceStartTick = delay + tick;
 					player.objectAppearanceEndTick = length + tick;
 					player.objectModel = model;
-					int i23 = definition.width;
-					int j23 = definition.length;
-					if (i20 == 1 || i20 == 3) {
-						i23 = definition.length;
-						j23 = definition.width;
+					int dx = definition.width;
+					int dy = definition.length;
+					if (orientation == 1 || orientation == 3) {
+						dx = definition.length;
+						dy = definition.width;
 					}
-					player.anInt1711 = x * 128 + i23 * 64;
-					player.anInt1713 = y * 128 + j23 * 64;
+
+					player.anInt1711 = x * 128 + dx * 64;
+					player.anInt1713 = y * 128 + dy * 64;
 					player.anInt1712 = method42(player.anInt1711, player.anInt1713, plane);
 					if (byte2 > byte0) {
 						byte byte4 = byte2;
@@ -9691,8 +9683,8 @@ public final class Client extends GameApplet {
 			if (!npc.definition.clickable) {
 				key += 0x80000000;
 			}
-			scene.addEntity(npc.worldX, npc.worldY, plane, npc, npc.orientation, key,
-					method42(npc.worldX, npc.worldY, plane), (npc.size - 1) * 64 + 60, npc.animationStretches);
+			scene.addEntity(npc.worldX, npc.worldY, plane, npc, npc.orientation, key, method42(npc.worldX, npc.worldY, plane),
+					(npc.size - 1) * 64 + 60, npc.animationStretches);
 		}
 	}
 
@@ -9803,6 +9795,7 @@ public final class Client extends GameApplet {
 					} else {
 						player = players[index];
 					}
+
 					if (player != null && player.worldX >= 0 && player.worldX < 13312 && player.worldY >= 0
 							&& player.worldY < 13312) {
 						projectile.target(player.worldX, player.worldY, method42(player.worldX, player.worldY, projectile.plane)
@@ -9825,11 +9818,11 @@ public final class Client extends GameApplet {
 			}
 
 			Widget child = Widget.widgets[childId];
-			if (child.anInt262 == 1) {
+			if (child.type == 1) {
 				redrawRequired |= processWidgetAnimations(child.id, tickDelta);
 			}
 
-			if (child.anInt262 == 6 && (child.mediaAnimationId != -1 || child.anInt258 != -1)) {
+			if (child.type == 6 && (child.mediaAnimationId != -1 || child.anInt258 != -1)) {
 				boolean flag2 = method131(child);
 				int animationId;
 
@@ -10249,8 +10242,8 @@ public final class Client extends GameApplet {
 			loginButtonX = super.frameWidth / 2 + 80;
 			if (super.lastMetaModifier == 1 && super.lastClickX >= loginButtonX - 75 && super.lastClickX <= loginButtonX + 75
 					&& super.lastClickY >= loginButtonY - 20 && super.lastClickY <= loginButtonY + 20) {
-				loginMessage1 = "";
-				loginMessage2 = "Enter your username & password.";
+				firstLoginMessage = "";
+				secondLoginMessage = "Enter your username & password.";
 				loginScreenStage = 2;
 				loginInputLine = 0;
 				return;
@@ -10395,7 +10388,7 @@ public final class Client extends GameApplet {
 
 	public final DataInputStream requestCacheIndex(String request) throws IOException {
 		if (!aBoolean872) {
-			if (SignLink.mainApp != null) {
+			if (SignLink.applet != null) {
 				return SignLink.openUrl(request);
 			}
 			return new DataInputStream(new URL(getCodeBase(), request).openStream());
@@ -10487,6 +10480,7 @@ public final class Client extends GameApplet {
 			}
 		} catch (Exception _ex) {
 		}
+
 		primary = null;
 		loggedIn = false;
 		loginScreenStage = 0;
@@ -10494,6 +10488,7 @@ public final class Client extends GameApplet {
 		password = "testing";
 		unlinkCaches();
 		scene.reset();
+
 		for (int i = 0; i < 4; i++) {
 			collisionMaps[i].init();
 		}
@@ -10512,9 +10507,10 @@ public final class Client extends GameApplet {
 				break;
 			}
 			Widget child = Widget.widgets[childId];
-			if (child.anInt262 == 1) {
+			if (child.type == 1) {
 				resetAnimation(child.id);
 			}
+
 			child.displayedFrameCount = 0;
 			child.lastFrameTime = 0;
 		}
@@ -10671,7 +10667,7 @@ public final class Client extends GameApplet {
 		if (priority > 10) {
 			priority = 10;
 		}
-		if (SignLink.mainApp != null) {
+		if (SignLink.applet != null) {
 			SignLink.startThread(runnable, priority);
 			return;
 		}

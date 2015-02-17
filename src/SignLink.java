@@ -16,7 +16,7 @@ public final class SignLink implements Runnable {
 	public static String dns = null;
 	public static String error = "";
 	public static RandomAccessFile[] indices = new RandomAccessFile[5];
-	public static Applet mainApp = null;
+	public static Applet applet = null;
 	public static String midi = null;
 	public static int midiFade;
 	public static int midiVolume;
@@ -280,7 +280,7 @@ public final class SignLink implements Runnable {
 				saveRequest = null;
 			} else if (urlRequest != null) {
 				try {
-					urlStream = new DataInputStream(new URL(mainApp.getCodeBase(), urlRequest).openStream());
+					urlStream = new DataInputStream(new URL(applet.getCodeBase(), urlRequest).openStream());
 				} catch (Exception ex) {
 					urlStream = null;
 				}
