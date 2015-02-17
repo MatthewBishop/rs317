@@ -194,7 +194,7 @@ public final class Client extends GameApplet {
 	private boolean aBoolean1017;
 	private boolean aBoolean1103;
 	private boolean aBoolean1149;
-	private boolean aBoolean1223;
+	private boolean redrawChatbox;
 	private boolean aBoolean1233;
 	private boolean aBoolean1242;
 	private boolean aBoolean1255;
@@ -249,7 +249,7 @@ public final class Client extends GameApplet {
 	private Font aClass30_Sub2_Sub1_Sub4_1273;
 	private Widget aClass9_1059;
 	private long aLong1172;
-	private long aLong953;
+	private long friendHash;
 	private int anInt1002;
 	private int anInt1010;
 	private int anInt1011;
@@ -262,7 +262,7 @@ public final class Client extends GameApplet {
 	private int anInt1041;
 	private int anInt1048;
 	private int anInt1063;
-	private int anInt1064;
+	private int friendListAction;
 	private int anInt1066;
 	private int anInt1067;
 	private int anInt1071;
@@ -272,7 +272,7 @@ public final class Client extends GameApplet {
 	private int anInt1086;
 	private int anInt1087;
 	private int anInt1088;
-	private int anInt1089;
+	private int chatboxScrollerPos;
 	private int anInt1098;
 	private int anInt1099;
 	private int anInt1100;
@@ -284,7 +284,7 @@ public final class Client extends GameApplet {
 	private int anInt1138;
 	private int anInt1170;
 	private int anInt1171;
-	private int anInt1178;
+	private int reportInterfaceId;
 	private int anInt1186;
 	private int anInt1187;
 	private int anInt1195;
@@ -357,7 +357,7 @@ public final class Client extends GameApplet {
 	private int[] anIntArray1073;
 	private int[] anIntArray1091;
 	private int[] anIntArray1092;
-	private int[] anIntArray1093;
+	private int[] menuActionIds;
 	private int[] anIntArray1094;
 	private final int[] anIntArray1177 = { 0, 0, 0, 0, 1, 1, 1, 1, 1, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 3 };
 	private int[] anIntArray1180;
@@ -388,9 +388,9 @@ public final class Client extends GameApplet {
 	private int[][] anIntArrayArray929;
 	private int[][][] anIntArrayArrayArray1214;
 	private int[] archiveCRCs;
-	private String aString1004;
+	private String textInput;
 	private String aString1121;
-	private String aString1212;
+	private String messagePromptInput;
 	private String[] aStringArray1127;
 	private String[] aStringArray983;
 	private boolean avatarChanged;;
@@ -411,7 +411,7 @@ public final class Client extends GameApplet {
 	private IndexedImage chatBackground;
 	private Buffer chatBuffer = new Buffer(new byte[5000]);
 	private String[] chatMessages;
-	private String[] chatPlayerNames;
+	private String[] chatNames;
 	private int[] chatTypes;
 	private String clickToContinueString;
 	private CollisionMap[] collisionMaps;
@@ -591,7 +591,7 @@ public final class Client extends GameApplet {
 		anIntArrayArray929 = new int[104][104];
 		indexCRC = new CRC32();
 		chatTypes = new int[100];
-		chatPlayerNames = new String[100];
+		chatNames = new String[100];
 		chatMessages = new String[100];
 		sideIcons = new IndexedImage[13];
 		wasFocused = true;
@@ -616,7 +616,7 @@ public final class Client extends GameApplet {
 		hitMarks = new DirectSprite[20];
 		characterDesignColours = new int[5];
 		anInt1002 = 0x23201b;
-		aString1004 = "";
+		textInput = "";
 		projectiles = new Deque();
 		currentStatusInterface = -1;
 		anIntArray1030 = new int[5];
@@ -640,7 +640,7 @@ public final class Client extends GameApplet {
 		archiveCRCs = new int[9];
 		anIntArray1091 = new int[500];
 		anIntArray1092 = new int[500];
-		anIntArray1093 = new int[500];
+		menuActionIds = new int[500];
 		anIntArray1094 = new int[500];
 		headIcons = new DirectSprite[20];
 		aString1121 = "";
@@ -655,7 +655,7 @@ public final class Client extends GameApplet {
 		anInt1171 = 1;
 		username = "Major";
 		password = "testing";
-		anInt1178 = -1;
+		reportInterfaceId = -1;
 		spawns = new Deque();
 		cameraRoll = 128;
 		inventoryOverlayInterfaceId = -1;
@@ -664,7 +664,7 @@ public final class Client extends GameApplet {
 		anIntArray1203 = new int[5];
 		tracks = new int[50];
 		anInt1210 = 2;
-		aString1212 = "";
+		messagePromptInput = "";
 		modIcons = new IndexedImage[2];
 		tabId = 3;
 		fadeMusic = true;
@@ -683,17 +683,17 @@ public final class Client extends GameApplet {
 		}
 
 		if (backDialogueId == -1) {
-			aBoolean1223 = true;
+			redrawChatbox = true;
 		}
 
 		for (int index = 99; index > 0; index--) {
 			chatTypes[index] = chatTypes[index - 1];
-			chatPlayerNames[index] = chatPlayerNames[index - 1];
+			chatNames[index] = chatNames[index - 1];
 			chatMessages[index] = chatMessages[index - 1];
 		}
 
 		chatTypes[0] = type;
-		chatPlayerNames[0] = name;
+		chatNames[0] = name;
 		chatMessages[0] = message;
 	}
 
@@ -817,7 +817,7 @@ public final class Client extends GameApplet {
 
 		if (backDialogueId != -1) {
 			backDialogueId = -1;
-			aBoolean1223 = true;
+			redrawChatbox = true;
 			aBoolean1149 = false;
 		}
 
@@ -1055,7 +1055,7 @@ public final class Client extends GameApplet {
 		for (int index = 0; index < 100; index++) {
 			if (chatMessages[index] != null) {
 				int type = chatTypes[index];
-				String name = chatPlayerNames[index];
+				String name = chatNames[index];
 				byte privilege = 0;
 
 				if (name != null && name.startsWith("@cr1@")) {
@@ -1121,7 +1121,7 @@ public final class Client extends GameApplet {
 			aClass15_910.drawImage(super.graphics, 496, 357);
 			aClass15_911.drawImage(super.graphics, 0, 338);
 			redrawTabArea = true;
-			aBoolean1223 = true;
+			redrawChatbox = true;
 			aBoolean1103 = true;
 			aBoolean1233 = true;
 			if (loadingStage != 2) {
@@ -1155,7 +1155,7 @@ public final class Client extends GameApplet {
 			redrawTabArea = false;
 		}
 		if (backDialogueId == -1) {
-			aClass9_1059.scrollPosition = anInt1211 - anInt1089 - 77;
+			aClass9_1059.scrollPosition = anInt1211 - chatboxScrollerPos - 77;
 			if (super.mouseEventX > 448 && super.mouseEventX < 560 && super.mouseEventY > 332) {
 				method65(463, 77, super.mouseEventX - 17, super.mouseEventY - 357, aClass9_1059, 0, false, anInt1211, 0);
 			}
@@ -1166,32 +1166,32 @@ public final class Client extends GameApplet {
 			if (i > anInt1211 - 77) {
 				i = anInt1211 - 77;
 			}
-			if (anInt1089 != i) {
-				anInt1089 = i;
-				aBoolean1223 = true;
+			if (chatboxScrollerPos != i) {
+				chatboxScrollerPos = i;
+				redrawChatbox = true;
 			}
 		}
 		if (backDialogueId != -1) {
 			boolean flag2 = processWidgetAnimations(backDialogueId, tickDelta);
 			if (flag2) {
-				aBoolean1223 = true;
+				redrawChatbox = true;
 			}
 		}
 		if (anInt1246 == 3) {
-			aBoolean1223 = true;
+			redrawChatbox = true;
 		}
 		if (anInt1086 == 3) {
-			aBoolean1223 = true;
+			redrawChatbox = true;
 		}
 		if (clickToContinueString != null) {
-			aBoolean1223 = true;
+			redrawChatbox = true;
 		}
 		if (menuOpen && anInt948 == 2) {
-			aBoolean1223 = true;
+			redrawChatbox = true;
 		}
-		if (aBoolean1223) {
+		if (redrawChatbox) {
 			method18();
-			aBoolean1223 = false;
+			redrawChatbox = false;
 		}
 		if (loadingStage == 2) {
 			method126();
@@ -1663,7 +1663,7 @@ public final class Client extends GameApplet {
 		return super.getParameter(parameter);
 	}
 
-	public final void ignorePlayer(long name) {
+	public final void addIgnore(long name) {
 		if (name == 0L) {
 			return;
 		}
@@ -2574,16 +2574,16 @@ public final class Client extends GameApplet {
 				row--;
 			}
 			menuActionTexts[menuActionRow] = "Remove @whi@" + friendUsernames[row];
-			anIntArray1093[menuActionRow] = 792;
+			menuActionIds[menuActionRow] = 792;
 			menuActionRow++;
 			menuActionTexts[menuActionRow] = "Message @whi@" + friendUsernames[row];
-			anIntArray1093[menuActionRow] = 639;
+			menuActionIds[menuActionRow] = 639;
 			menuActionRow++;
 			return true;
 		}
 		if (row >= 401 && row <= 500) {
 			menuActionTexts[menuActionRow] = "Remove @whi@" + widget.hiddenText;
-			anIntArray1093[menuActionRow] = 322;
+			menuActionIds[menuActionRow] = 322;
 			menuActionRow++;
 			return true;
 		}
@@ -3477,7 +3477,7 @@ public final class Client extends GameApplet {
 		for (int index = 0; index < 100; index++) {
 			if (chatMessages[index] != null) {
 				int type = chatTypes[index];
-				String username = chatPlayerNames[index];
+				String username = chatNames[index];
 				if (username != null && username.startsWith("@cr1@")) {
 					username = username.substring(5);
 				}
@@ -3495,14 +3495,14 @@ public final class Client extends GameApplet {
 						if (super.mouseEventX < 4 + width) {
 							if (playerPrivelage >= 1) {
 								menuActionTexts[menuActionRow] = "Report abuse @whi@" + username;
-								anIntArray1093[menuActionRow] = 2606;
+								menuActionIds[menuActionRow] = 2606;
 								menuActionRow++;
 							}
 							menuActionTexts[menuActionRow] = "Add ignore @whi@" + username;
-							anIntArray1093[menuActionRow] = 2042;
+							menuActionIds[menuActionRow] = 2042;
 							menuActionRow++;
 							menuActionTexts[menuActionRow] = "Add friend @whi@" + username;
-							anIntArray1093[menuActionRow] = 2337;
+							menuActionIds[menuActionRow] = 2337;
 							menuActionRow++;
 						}
 					}
@@ -3808,7 +3808,7 @@ public final class Client extends GameApplet {
 		if (j < 0) {
 			return false;
 		}
-		int k = anIntArray1093[j];
+		int k = menuActionIds[j];
 		if (k >= 2000) {
 			k -= 2000;
 		}
@@ -3821,13 +3821,13 @@ public final class Client extends GameApplet {
 		chatBackground.draw(0, 0);
 		if (messagePromptRaised) {
 			boldFont.renderCentre(239, 40, aString1121, 0);
-			boldFont.renderCentre(239, 60, aString1212 + "*", 128);
+			boldFont.renderCentre(239, 60, messagePromptInput + "*", 128);
 		} else if (inputDialogueState == 1) {
 			boldFont.renderCentre(239, 40, "Enter amount:", 0);
-			boldFont.renderCentre(239, 60, aString1004 + "*", 128);
+			boldFont.renderCentre(239, 60, textInput + "*", 128);
 		} else if (inputDialogueState == 2) {
 			boldFont.renderCentre(239, 40, "Enter name:", 0);
-			boldFont.renderCentre(239, 60, aString1004 + "*", 128);
+			boldFont.renderCentre(239, 60, textInput + "*", 128);
 		} else if (clickToContinueString != null) {
 			boldFont.renderCentre(239, 40, clickToContinueString, 0);
 			boldFont.renderCentre(239, 60, "Click to continue", 128);
@@ -3842,8 +3842,8 @@ public final class Client extends GameApplet {
 			for (int message = 0; message < 100; message++) {
 				if (chatMessages[message] != null) {
 					int type = chatTypes[message];
-					int y = 70 - count * 14 + anInt1089;
-					String username = chatPlayerNames[message];
+					int y = 70 - count * 14 + chatboxScrollerPos;
+					String username = chatNames[message];
 					byte privilege = 0;
 					if (username != null && username.startsWith("@cr1@")) {
 						username = username.substring(5);
@@ -3930,7 +3930,7 @@ public final class Client extends GameApplet {
 			if (anInt1211 < 78) {
 				anInt1211 = 78;
 			}
-			method30(77, anInt1211 - anInt1089 - 77, 0, 463, anInt1211);
+			method30(77, anInt1211 - chatboxScrollerPos - 77, 0, 463, anInt1211);
 			String s;
 			if (localPlayer != null && localPlayer.name != null) {
 				s = localPlayer.name;
@@ -3980,7 +3980,7 @@ public final class Client extends GameApplet {
 						redrawTabArea = true;
 					}
 					if (anInt948 == 2) {
-						aBoolean1223 = true;
+						redrawChatbox = true;
 					}
 				}
 			}
@@ -4018,13 +4018,13 @@ public final class Client extends GameApplet {
 					redrawTabArea = true;
 				}
 				if (anInt948 == 2) {
-					aBoolean1223 = true;
+					redrawChatbox = true;
 					return;
 				}
 			}
 		} else {
 			if (j == 1 && menuActionRow > 0) {
-				int i1 = anIntArray1093[menuActionRow - 1];
+				int i1 = menuActionIds[menuActionRow - 1];
 				if (i1 == 632 || i1 == 78 || i1 == 867 || i1 == 431 || i1 == 53 || i1 == 74 || i1 == 454 || i1 == 539
 						|| i1 == 493 || i1 == 847 || i1 == 447 || i1 == 1125) {
 					int l1 = anIntArray1091[menuActionRow - 1];
@@ -4384,7 +4384,7 @@ public final class Client extends GameApplet {
 					}
 					if (!flag) {
 						menuActionTexts[menuActionRow] = child.hover;
-						anIntArray1093[menuActionRow] = 315;
+						menuActionIds[menuActionRow] = 315;
 						anIntArray1092[menuActionRow] = child.id;
 						menuActionRow++;
 					}
@@ -4396,31 +4396,31 @@ public final class Client extends GameApplet {
 						s = s.substring(0, s.indexOf(" "));
 					}
 					menuActionTexts[menuActionRow] = s + " @gre@" + child.aString218;
-					anIntArray1093[menuActionRow] = 626;
+					menuActionIds[menuActionRow] = 626;
 					anIntArray1092[menuActionRow] = child.id;
 					menuActionRow++;
 				}
 				if (child.anInt217 == 3 && k >= i2 && i1 >= j2 && k < i2 + child.width && i1 < j2 + child.height) {
 					menuActionTexts[menuActionRow] = "Close";
-					anIntArray1093[menuActionRow] = 200;
+					menuActionIds[menuActionRow] = 200;
 					anIntArray1092[menuActionRow] = child.id;
 					menuActionRow++;
 				}
 				if (child.anInt217 == 4 && k >= i2 && i1 >= j2 && k < i2 + child.width && i1 < j2 + child.height) {
 					menuActionTexts[menuActionRow] = child.hover;
-					anIntArray1093[menuActionRow] = 169;
+					menuActionIds[menuActionRow] = 169;
 					anIntArray1092[menuActionRow] = child.id;
 					menuActionRow++;
 				}
 				if (child.anInt217 == 5 && k >= i2 && i1 >= j2 && k < i2 + child.width && i1 < j2 + child.height) {
 					menuActionTexts[menuActionRow] = child.hover;
-					anIntArray1093[menuActionRow] = 646;
+					menuActionIds[menuActionRow] = 646;
 					anIntArray1092[menuActionRow] = child.id;
 					menuActionRow++;
 				}
 				if (child.anInt217 == 6 && !aBoolean1149 && k >= i2 && i1 >= j2 && k < i2 + child.width && i1 < j2 + child.height) {
 					menuActionTexts[menuActionRow] = child.hover;
-					anIntArray1093[menuActionRow] = 679;
+					menuActionIds[menuActionRow] = 679;
 					anIntArray1092[menuActionRow] = child.id;
 					menuActionRow++;
 				}
@@ -4443,7 +4443,7 @@ public final class Client extends GameApplet {
 										if (child.id != anInt1284 || k2 != anInt1283) {
 											menuActionTexts[menuActionRow] = "Use " + selectedItemName + " with @lre@"
 													+ definition.name;
-											anIntArray1093[menuActionRow] = 870;
+											menuActionIds[menuActionRow] = 870;
 											anIntArray1094[menuActionRow] = definition.id;
 											anIntArray1091[menuActionRow] = k2;
 											anIntArray1092[menuActionRow] = child.id;
@@ -4452,7 +4452,7 @@ public final class Client extends GameApplet {
 									} else if (selectedSpellId == 1 && child.aBoolean249) {
 										if ((anInt1138 & 0x10) == 16) {
 											menuActionTexts[menuActionRow] = selectedSpellName + " @lre@" + definition.name;
-											anIntArray1093[menuActionRow] = 543;
+											menuActionIds[menuActionRow] = 543;
 											anIntArray1094[menuActionRow] = definition.id;
 											anIntArray1091[menuActionRow] = k2;
 											anIntArray1092[menuActionRow] = child.id;
@@ -4466,10 +4466,10 @@ public final class Client extends GameApplet {
 													menuActionTexts[menuActionRow] = definition.inventoryMenuActions[l3]
 															+ " @lre@" + definition.name;
 													if (l3 == 3) {
-														anIntArray1093[menuActionRow] = 493;
+														menuActionIds[menuActionRow] = 493;
 													}
 													if (l3 == 4) {
-														anIntArray1093[menuActionRow] = 847;
+														menuActionIds[menuActionRow] = 847;
 													}
 													anIntArray1094[menuActionRow] = definition.id;
 													anIntArray1091[menuActionRow] = k2;
@@ -4477,7 +4477,7 @@ public final class Client extends GameApplet {
 													menuActionRow++;
 												} else if (l3 == 4) {
 													menuActionTexts[menuActionRow] = "Drop @lre@" + definition.name;
-													anIntArray1093[menuActionRow] = 847;
+													menuActionIds[menuActionRow] = 847;
 													anIntArray1094[menuActionRow] = definition.id;
 													anIntArray1091[menuActionRow] = k2;
 													anIntArray1092[menuActionRow] = child.id;
@@ -4488,7 +4488,7 @@ public final class Client extends GameApplet {
 										}
 										if (child.aBoolean242) {
 											menuActionTexts[menuActionRow] = "Use @lre@" + definition.name;
-											anIntArray1093[menuActionRow] = 447;
+											menuActionIds[menuActionRow] = 447;
 											anIntArray1094[menuActionRow] = definition.id;
 											anIntArray1091[menuActionRow] = k2;
 											anIntArray1092[menuActionRow] = child.id;
@@ -4500,13 +4500,13 @@ public final class Client extends GameApplet {
 													menuActionTexts[menuActionRow] = definition.inventoryMenuActions[i4]
 															+ " @lre@" + definition.name;
 													if (i4 == 0) {
-														anIntArray1093[menuActionRow] = 74;
+														menuActionIds[menuActionRow] = 74;
 													}
 													if (i4 == 1) {
-														anIntArray1093[menuActionRow] = 454;
+														menuActionIds[menuActionRow] = 454;
 													}
 													if (i4 == 2) {
-														anIntArray1093[menuActionRow] = 539;
+														menuActionIds[menuActionRow] = 539;
 													}
 													anIntArray1094[menuActionRow] = definition.id;
 													anIntArray1091[menuActionRow] = k2;
@@ -4522,19 +4522,19 @@ public final class Client extends GameApplet {
 													menuActionTexts[menuActionRow] = child.actions[j4] + " @lre@"
 															+ definition.name;
 													if (j4 == 0) {
-														anIntArray1093[menuActionRow] = 632;
+														menuActionIds[menuActionRow] = 632;
 													}
 													if (j4 == 1) {
-														anIntArray1093[menuActionRow] = 78;
+														menuActionIds[menuActionRow] = 78;
 													}
 													if (j4 == 2) {
-														anIntArray1093[menuActionRow] = 867;
+														menuActionIds[menuActionRow] = 867;
 													}
 													if (j4 == 3) {
-														anIntArray1093[menuActionRow] = 431;
+														menuActionIds[menuActionRow] = 431;
 													}
 													if (j4 == 4) {
-														anIntArray1093[menuActionRow] = 53;
+														menuActionIds[menuActionRow] = 53;
 													}
 													anIntArray1094[menuActionRow] = definition.id;
 													anIntArray1091[menuActionRow] = k2;
@@ -4545,7 +4545,7 @@ public final class Client extends GameApplet {
 
 										}
 										menuActionTexts[menuActionRow] = "Examine @lre@" + definition.name;
-										anIntArray1093[menuActionRow] = 1125;
+										menuActionIds[menuActionRow] = 1125;
 										anIntArray1094[menuActionRow] = definition.id;
 										anIntArray1091[menuActionRow] = k2;
 										anIntArray1092[menuActionRow] = child.id;
@@ -4616,7 +4616,7 @@ public final class Client extends GameApplet {
 						if (widget == null || widget.anInt214 != 600) {
 							continue;
 						}
-						anInt1178 = openInterfaceId = widget.parent;
+						reportInterfaceId = openInterfaceId = widget.parent;
 						break;
 					}
 
@@ -4722,7 +4722,7 @@ public final class Client extends GameApplet {
 		}
 		if (parameter == 8) {
 			anInt1195 = state;
-			aBoolean1223 = true;
+			redrawChatbox = true;
 		}
 		if (parameter == 9) {
 			anInt913 = state;
@@ -4965,19 +4965,19 @@ public final class Client extends GameApplet {
 		int contentType = widget.anInt214;
 		if (friendServerStatus == 2) {
 			if (contentType == 201) {
-				aBoolean1223 = true;
+				redrawChatbox = true;
 				inputDialogueState = 0;
 				messagePromptRaised = true;
-				aString1212 = "";
-				anInt1064 = 1;
+				messagePromptInput = "";
+				friendListAction = 1;
 				aString1121 = "Enter name of friend to add to list";
 			}
 			if (contentType == 202) {
-				aBoolean1223 = true;
+				redrawChatbox = true;
 				inputDialogueState = 0;
 				messagePromptRaised = true;
-				aString1212 = "";
-				anInt1064 = 2;
+				messagePromptInput = "";
+				friendListAction = 2;
 				aString1121 = "Enter name of friend to delete from list";
 			}
 		}
@@ -4986,19 +4986,19 @@ public final class Client extends GameApplet {
 			return true;
 		}
 		if (contentType == 501) {
-			aBoolean1223 = true;
+			redrawChatbox = true;
 			inputDialogueState = 0;
 			messagePromptRaised = true;
-			aString1212 = "";
-			anInt1064 = 4;
+			messagePromptInput = "";
+			friendListAction = 4;
 			aString1121 = "Enter name of player to add to list";
 		}
 		if (contentType == 502) {
-			aBoolean1223 = true;
+			redrawChatbox = true;
 			inputDialogueState = 0;
 			messagePromptRaised = true;
-			aString1212 = "";
-			anInt1064 = 5;
+			messagePromptInput = "";
+			friendListAction = 5;
 			aString1121 = "Enter name of player to delete from list";
 		}
 		if (contentType >= 300 && contentType <= 313) {
@@ -5602,12 +5602,12 @@ public final class Client extends GameApplet {
 			return;
 		} else if (inputDialogueState != 0) {
 			inputDialogueState = 0;
-			aBoolean1223 = true;
+			redrawChatbox = true;
 		}
 
 		int x = anIntArray1091[row];
 		int id = anIntArray1092[row];
-		int action = anIntArray1093[row];
+		int action = menuActionIds[row];
 		int clicked = anIntArray1094[row];
 
 		if (action >= 2000) {
@@ -5781,18 +5781,18 @@ public final class Client extends GameApplet {
 			String s = menuActionTexts[row];
 			int k1 = s.indexOf("@whi@");
 			if (k1 != -1) {
-				long l3 = StringUtils.encodeBase37(s.substring(k1 + 5).trim());
+				long nameHash = StringUtils.encodeBase37(s.substring(k1 + 5).trim());
 				if (action == 337) {
-					addFriend(l3);
+					addFriend(nameHash);
 				}
 				if (action == 42) {
-					ignorePlayer(l3);
+					addIgnore(nameHash);
 				}
 				if (action == 792) {
-					removeFriend(l3);
+					removeFriend(nameHash);
 				}
 				if (action == 322) {
-					unignoreUser(l3);
+					removeIgnore(nameHash);
 				}
 			}
 		}
@@ -6245,7 +6245,7 @@ public final class Client extends GameApplet {
 						if (element == null || element.anInt214 != 600) {
 							continue;
 						}
-						anInt1178 = openInterfaceId = element.parent;
+						reportInterfaceId = openInterfaceId = element.parent;
 						break;
 					}
 
@@ -6284,12 +6284,12 @@ public final class Client extends GameApplet {
 				}
 
 				if (k3 != -1 && friendWorlds[k3] > 0) {
-					aBoolean1223 = true;
+					redrawChatbox = true;
 					inputDialogueState = 0;
 					messagePromptRaised = true;
-					aString1212 = "";
-					anInt1064 = 3;
-					aLong953 = friends[k3];
+					messagePromptInput = "";
+					friendListAction = 3;
+					friendHash = friends[k3];
 					aString1121 = "Enter message to send to " + friendUsernames[k3];
 				}
 			}
@@ -6428,7 +6428,7 @@ public final class Client extends GameApplet {
 	public final void method71() {
 		if (selectedItemId == 0 && selectedSpellId == 0) {
 			menuActionTexts[menuActionRow] = "Walk here";
-			anIntArray1093[menuActionRow] = 516;
+			menuActionIds[menuActionRow] = 516;
 			anIntArray1091[menuActionRow] = super.mouseEventX;
 			anIntArray1092[menuActionRow] = super.mouseEventY;
 			menuActionRow++;
@@ -6454,7 +6454,7 @@ public final class Client extends GameApplet {
 				}
 				if (selectedItemId == 1) {
 					menuActionTexts[menuActionRow] = "Use " + selectedItemName + " with @cya@" + definition.name;
-					anIntArray1093[menuActionRow] = 62;
+					menuActionIds[menuActionRow] = 62;
 					anIntArray1094[menuActionRow] = config;
 					anIntArray1091[menuActionRow] = x;
 					anIntArray1092[menuActionRow] = y;
@@ -6462,7 +6462,7 @@ public final class Client extends GameApplet {
 				} else if (selectedSpellId == 1) {
 					if ((anInt1138 & 4) == 4) {
 						menuActionTexts[menuActionRow] = selectedSpellName + " @cya@" + definition.name;
-						anIntArray1093[menuActionRow] = 956;
+						menuActionIds[menuActionRow] = 956;
 						anIntArray1094[menuActionRow] = config;
 						anIntArray1091[menuActionRow] = x;
 						anIntArray1092[menuActionRow] = y;
@@ -6474,19 +6474,19 @@ public final class Client extends GameApplet {
 							if (definition.interactions[action] != null) {
 								menuActionTexts[menuActionRow] = definition.interactions[action] + " @cya@" + definition.name;
 								if (action == 0) {
-									anIntArray1093[menuActionRow] = 502;
+									menuActionIds[menuActionRow] = 502;
 								}
 								if (action == 1) {
-									anIntArray1093[menuActionRow] = 900;
+									menuActionIds[menuActionRow] = 900;
 								}
 								if (action == 2) {
-									anIntArray1093[menuActionRow] = 113;
+									menuActionIds[menuActionRow] = 113;
 								}
 								if (action == 3) {
-									anIntArray1093[menuActionRow] = 872;
+									menuActionIds[menuActionRow] = 872;
 								}
 								if (action == 4) {
-									anIntArray1093[menuActionRow] = 1062;
+									menuActionIds[menuActionRow] = 1062;
 								}
 								anIntArray1094[menuActionRow] = config;
 								anIntArray1091[menuActionRow] = x;
@@ -6496,7 +6496,7 @@ public final class Client extends GameApplet {
 						}
 					}
 					menuActionTexts[menuActionRow] = "Examine @cya@" + definition.name;
-					anIntArray1093[menuActionRow] = 1226;
+					menuActionIds[menuActionRow] = 1226;
 					anIntArray1094[menuActionRow] = definition.id << 14;
 					anIntArray1091[menuActionRow] = x;
 					anIntArray1092[menuActionRow] = y;
@@ -6552,7 +6552,7 @@ public final class Client extends GameApplet {
 						ItemDefinition definition = ItemDefinition.lookup(item.id);
 						if (selectedItemId == 1) {
 							menuActionTexts[menuActionRow] = "Use " + selectedItemName + " with @lre@" + definition.name;
-							anIntArray1093[menuActionRow] = 511;
+							menuActionIds[menuActionRow] = 511;
 							anIntArray1094[menuActionRow] = item.id;
 							anIntArray1091[menuActionRow] = x;
 							anIntArray1092[menuActionRow] = y;
@@ -6560,7 +6560,7 @@ public final class Client extends GameApplet {
 						} else if (selectedSpellId == 1) {
 							if ((anInt1138 & 1) == 1) {
 								menuActionTexts[menuActionRow] = selectedSpellName + " @lre@" + definition.name;
-								anIntArray1093[menuActionRow] = 94;
+								menuActionIds[menuActionRow] = 94;
 								anIntArray1094[menuActionRow] = item.id;
 								anIntArray1091[menuActionRow] = x;
 								anIntArray1092[menuActionRow] = y;
@@ -6572,19 +6572,19 @@ public final class Client extends GameApplet {
 									menuActionTexts[menuActionRow] = definition.groundMenuActions[j3] + " @lre@"
 											+ definition.name;
 									if (j3 == 0) {
-										anIntArray1093[menuActionRow] = 652;
+										menuActionIds[menuActionRow] = 652;
 									}
 									if (j3 == 1) {
-										anIntArray1093[menuActionRow] = 567;
+										menuActionIds[menuActionRow] = 567;
 									}
 									if (j3 == 2) {
-										anIntArray1093[menuActionRow] = 234;
+										menuActionIds[menuActionRow] = 234;
 									}
 									if (j3 == 3) {
-										anIntArray1093[menuActionRow] = 244;
+										menuActionIds[menuActionRow] = 244;
 									}
 									if (j3 == 4) {
-										anIntArray1093[menuActionRow] = 213;
+										menuActionIds[menuActionRow] = 213;
 									}
 									anIntArray1094[menuActionRow] = item.id;
 									anIntArray1091[menuActionRow] = x;
@@ -6592,7 +6592,7 @@ public final class Client extends GameApplet {
 									menuActionRow++;
 								} else if (j3 == 2) {
 									menuActionTexts[menuActionRow] = "Take @lre@" + definition.name;
-									anIntArray1093[menuActionRow] = 234;
+									menuActionIds[menuActionRow] = 234;
 									anIntArray1094[menuActionRow] = item.id;
 									anIntArray1091[menuActionRow] = x;
 									anIntArray1092[menuActionRow] = y;
@@ -6601,7 +6601,7 @@ public final class Client extends GameApplet {
 							}
 
 							menuActionTexts[menuActionRow] = "Examine @lre@" + definition.name;
-							anIntArray1093[menuActionRow] = 1448;
+							menuActionIds[menuActionRow] = 1448;
 							anIntArray1094[menuActionRow] = item.id;
 							anIntArray1091[menuActionRow] = x;
 							anIntArray1092[menuActionRow] = y;
@@ -6613,13 +6613,13 @@ public final class Client extends GameApplet {
 		}
 	}
 
-	public final void method73() {
+	public final void processInput() {
 		do {
 			int key = nextPressedKey();
 			if (key == -1) {
 				break;
 			}
-			if (openInterfaceId != -1 && openInterfaceId == anInt1178) {
+			if (openInterfaceId != -1 && openInterfaceId == reportInterfaceId) {
 				if (key == 8 && reportInput.length() > 0) {
 					reportInput = reportInput.substring(0, reportInput.length() - 1);
 				}
@@ -6628,35 +6628,35 @@ public final class Client extends GameApplet {
 					reportInput += (char) key;
 				}
 			} else if (messagePromptRaised) {
-				if (key >= 32 && key <= 122 && aString1212.length() < 80) {
-					aString1212 += (char) key;
-					aBoolean1223 = true;
+				if (key >= 32 && key <= 122 && messagePromptInput.length() < 80) {
+					messagePromptInput += (char) key;
+					redrawChatbox = true;
 				}
-				if (key == 8 && aString1212.length() > 0) {
-					aString1212 = aString1212.substring(0, aString1212.length() - 1);
-					aBoolean1223 = true;
+				if (key == 8 && messagePromptInput.length() > 0) {
+					messagePromptInput = messagePromptInput.substring(0, messagePromptInput.length() - 1);
+					redrawChatbox = true;
 				}
 				if (key == 13 || key == 10) {
 					messagePromptRaised = false;
-					aBoolean1223 = true;
-					if (anInt1064 == 1) {
-						long friend = StringUtils.encodeBase37(aString1212);
+					redrawChatbox = true;
+					if (friendListAction == 1) {
+						long friend = StringUtils.encodeBase37(messagePromptInput);
 						addFriend(friend);
 					}
-					if (anInt1064 == 2 && friendCount > 0) {
-						long friend = StringUtils.encodeBase37(aString1212);
+					if (friendListAction == 2 && friendCount > 0) {
+						long friend = StringUtils.encodeBase37(messagePromptInput);
 						removeFriend(friend);
 					}
-					if (anInt1064 == 3 && aString1212.length() > 0) {
+					if (friendListAction == 3 && messagePromptInput.length() > 0) {
 						outgoing.writeOpcode(126);
 						outgoing.writeByte(0);
-						int k = outgoing.position;
-						outgoing.writeLong(aLong953);
-						ChatMessageCodec.encode(aString1212, outgoing);
-						outgoing.writeSizeByte(outgoing.position - k);
-						aString1212 = ChatMessageCodec.verify(aString1212);
-						aString1212 = MessageCensor.apply(aString1212);
-						addChatMessage(6, aString1212, StringUtils.format(StringUtils.decodeBase37(aLong953)));
+						int offset = outgoing.position;
+						outgoing.writeLong(friendHash);
+						ChatMessageCodec.encode(messagePromptInput, outgoing);
+						outgoing.writeSizeByte(outgoing.position - offset);
+						messagePromptInput = ChatMessageCodec.verify(messagePromptInput);
+						messagePromptInput = MessageCensor.apply(messagePromptInput);
+						addChatMessage(6, messagePromptInput, StringUtils.format(StringUtils.decodeBase37(friendHash)));
 						if (privateChatMode == 2) {
 							privateChatMode = 1;
 							aBoolean1233 = true;
@@ -6666,62 +6666,62 @@ public final class Client extends GameApplet {
 							outgoing.writeByte(tradeChatMode);
 						}
 					}
-					if (anInt1064 == 4 && ignoredCount < 100) {
-						long l2 = StringUtils.encodeBase37(aString1212);
-						ignorePlayer(l2);
+					if (friendListAction == 4 && ignoredCount < 100) {
+						long nameHash = StringUtils.encodeBase37(messagePromptInput);
+						addIgnore(nameHash);
 					}
-					if (anInt1064 == 5 && ignoredCount > 0) {
-						long l3 = StringUtils.encodeBase37(aString1212);
-						unignoreUser(l3);
+					if (friendListAction == 5 && ignoredCount > 0) {
+						long nameHash = StringUtils.encodeBase37(messagePromptInput);
+						removeIgnore(nameHash);
 					}
 				}
 			} else if (inputDialogueState == 1) {
-				if (key >= 48 && key <= 57 && aString1004.length() < 10) {
-					aString1004 += (char) key;
-					aBoolean1223 = true;
+				if (key >= 48 && key <= 57 && textInput.length() < 10) {
+					textInput += (char) key;
+					redrawChatbox = true;
 				}
-				if (key == 8 && aString1004.length() > 0) {
-					aString1004 = aString1004.substring(0, aString1004.length() - 1);
-					aBoolean1223 = true;
+				if (key == 8 && textInput.length() > 0) {
+					textInput = textInput.substring(0, textInput.length() - 1);
+					redrawChatbox = true;
 				}
 				if (key == 13 || key == 10) {
-					if (aString1004.length() > 0) {
+					if (textInput.length() > 0) {
 						int amount = 0;
 						try {
-							amount = Integer.parseInt(aString1004);
+							amount = Integer.parseInt(textInput);
 						} catch (Exception _ex) {
 						}
 						outgoing.writeOpcode(208);
 						outgoing.writeInt(amount);
 					}
 					inputDialogueState = 0;
-					aBoolean1223 = true;
+					redrawChatbox = true;
 				}
 			} else if (inputDialogueState == 2) {
-				if (key >= 32 && key <= 122 && aString1004.length() < 12) {
-					aString1004 += (char) key;
-					aBoolean1223 = true;
+				if (key >= 32 && key <= 122 && textInput.length() < 12) {
+					textInput += (char) key;
+					redrawChatbox = true;
 				}
-				if (key == 8 && aString1004.length() > 0) {
-					aString1004 = aString1004.substring(0, aString1004.length() - 1);
-					aBoolean1223 = true;
+				if (key == 8 && textInput.length() > 0) {
+					textInput = textInput.substring(0, textInput.length() - 1);
+					redrawChatbox = true;
 				}
 				if (key == 13 || key == 10) {
-					if (aString1004.length() > 0) {
+					if (textInput.length() > 0) {
 						outgoing.writeOpcode(60);
-						outgoing.writeLong(StringUtils.encodeBase37(aString1004));
+						outgoing.writeLong(StringUtils.encodeBase37(textInput));
 					}
 					inputDialogueState = 0;
-					aBoolean1223 = true;
+					redrawChatbox = true;
 				}
 			} else if (backDialogueId == -1) {
 				if (key >= 32 && key <= 122 && input.length() < 80) {
 					input += (char) key;
-					aBoolean1223 = true;
+					redrawChatbox = true;
 				}
 				if (key == 8 && input.length() > 0) {
 					input = input.substring(0, input.length() - 1);
-					aBoolean1223 = true;
+					redrawChatbox = true;
 				}
 				if ((key == 13 || key == 10) && input.length() > 0) {
 					if (playerPrivelage == 2) {
@@ -6851,84 +6851,84 @@ public final class Client extends GameApplet {
 						}
 					}
 					input = "";
-					aBoolean1223 = true;
+					redrawChatbox = true;
 				}
 			}
 		} while (true);
 	}
 
-	public final void method74(int j) {
-		int l = 0;
-		for (int i1 = 0; i1 < 100; i1++) {
-			if (chatMessages[i1] == null) {
+	public final void buildChatAreaMenu(int mouseY) {
+		int scrollOffset = 0;
+		for (int id = 0; id < 100; id++) {
+			if (chatMessages[id] == null) {
 				continue;
 			}
-			int j1 = chatTypes[i1];
-			int k1 = 70 - l * 14 + anInt1089 + 4;
-			if (k1 < -20) {
+			int type = chatTypes[id];
+			int scrollPos = 70 - scrollOffset * 14 + chatboxScrollerPos + 4;
+			if (scrollPos < -20) {
 				break;
 			}
-			String s = chatPlayerNames[i1];
-			if (s != null && s.startsWith("@cr1@")) {
-				s = s.substring(5);
+			String name = chatNames[id];
+			if (name != null && name.startsWith("@cr1@")) {
+				name = name.substring(5);
 			}
-			if (s != null && s.startsWith("@cr2@")) {
-				s = s.substring(5);
+			if (name != null && name.startsWith("@cr2@")) {
+				name = name.substring(5);
 			}
-			if (j1 == 0) {
-				l++;
+			if (type == 0) {
+				scrollOffset++;
 			}
-			if ((j1 == 1 || j1 == 2) && (j1 == 1 || publicChatMode == 0 || publicChatMode == 1 && isBefriendedPlayer(s))) {
-				if (j > k1 - 14 && j <= k1 && !s.equals(localPlayer.name)) {
+			if ((type == 1 || type == 2) && (type == 1 || publicChatMode == 0 || publicChatMode == 1 && isBefriendedPlayer(name))) {
+				if (mouseY > scrollPos - 14 && mouseY <= scrollPos && !name.equals(localPlayer.name)) {
 					if (playerPrivelage >= 1) {
-						menuActionTexts[menuActionRow] = "Report abuse @whi@" + s;
-						anIntArray1093[menuActionRow] = 606;
+						menuActionTexts[menuActionRow] = "Report abuse @whi@" + name;
+						menuActionIds[menuActionRow] = 606;
 						menuActionRow++;
 					}
-					menuActionTexts[menuActionRow] = "Add ignore @whi@" + s;
-					anIntArray1093[menuActionRow] = 42;
+					menuActionTexts[menuActionRow] = "Add ignore @whi@" + name;
+					menuActionIds[menuActionRow] = 42;
 					menuActionRow++;
-					menuActionTexts[menuActionRow] = "Add friend @whi@" + s;
-					anIntArray1093[menuActionRow] = 337;
+					menuActionTexts[menuActionRow] = "Add friend @whi@" + name;
+					menuActionIds[menuActionRow] = 337;
 					menuActionRow++;
 				}
-				l++;
+				scrollOffset++;
 			}
-			if ((j1 == 3 || j1 == 7) && anInt1195 == 0
-					&& (j1 == 7 || privateChatMode == 0 || privateChatMode == 1 && isBefriendedPlayer(s))) {
-				if (j > k1 - 14 && j <= k1) {
+			if ((type == 3 || type == 7) && anInt1195 == 0
+					&& (type == 7 || privateChatMode == 0 || privateChatMode == 1 && isBefriendedPlayer(name))) {
+				if (mouseY > scrollPos - 14 && mouseY <= scrollPos) {
 					if (playerPrivelage >= 1) {
-						menuActionTexts[menuActionRow] = "Report abuse @whi@" + s;
-						anIntArray1093[menuActionRow] = 606;
+						menuActionTexts[menuActionRow] = "Report abuse @whi@" + name;
+						menuActionIds[menuActionRow] = 606;
 						menuActionRow++;
 					}
-					menuActionTexts[menuActionRow] = "Add ignore @whi@" + s;
-					anIntArray1093[menuActionRow] = 42;
+					menuActionTexts[menuActionRow] = "Add ignore @whi@" + name;
+					menuActionIds[menuActionRow] = 42;
 					menuActionRow++;
-					menuActionTexts[menuActionRow] = "Add friend @whi@" + s;
-					anIntArray1093[menuActionRow] = 337;
-					menuActionRow++;
-				}
-				l++;
-			}
-			if (j1 == 4 && (tradeChatMode == 0 || tradeChatMode == 1 && isBefriendedPlayer(s))) {
-				if (j > k1 - 14 && j <= k1) {
-					menuActionTexts[menuActionRow] = "Accept trade @whi@" + s;
-					anIntArray1093[menuActionRow] = 484;
+					menuActionTexts[menuActionRow] = "Add friend @whi@" + name;
+					menuActionIds[menuActionRow] = 337;
 					menuActionRow++;
 				}
-				l++;
+				scrollOffset++;
 			}
-			if ((j1 == 5 || j1 == 6) && anInt1195 == 0 && privateChatMode < 2) {
-				l++;
-			}
-			if (j1 == 8 && (tradeChatMode == 0 || tradeChatMode == 1 && isBefriendedPlayer(s))) {
-				if (j > k1 - 14 && j <= k1) {
-					menuActionTexts[menuActionRow] = "Accept challenge @whi@" + s;
-					anIntArray1093[menuActionRow] = 6;
+			if (type == 4 && (tradeChatMode == 0 || tradeChatMode == 1 && isBefriendedPlayer(name))) {
+				if (mouseY > scrollPos - 14 && mouseY <= scrollPos) {
+					menuActionTexts[menuActionRow] = "Accept trade @whi@" + name;
+					menuActionIds[menuActionRow] = 484;
 					menuActionRow++;
 				}
-				l++;
+				scrollOffset++;
+			}
+			if ((type == 5 || type == 6) && anInt1195 == 0 && privateChatMode < 2) {
+				scrollOffset++;
+			}
+			if (type == 8 && (tradeChatMode == 0 || tradeChatMode == 1 && isBefriendedPlayer(name))) {
+				if (mouseY > scrollPos - 14 && mouseY <= scrollPos) {
+					menuActionTexts[menuActionRow] = "Accept challenge @whi@" + name;
+					menuActionIds[menuActionRow] = 6;
+					menuActionRow++;
+				}
+				scrollOffset++;
 			}
 		}
 
@@ -7316,7 +7316,7 @@ public final class Client extends GameApplet {
 			return;
 		}
 		menuActionTexts[0] = "Cancel";
-		anIntArray1093[0] = 1107;
+		menuActionIds[0] = 1107;
 		menuActionRow = 1;
 		method129();
 		anInt886 = 0;
@@ -7347,11 +7347,11 @@ public final class Client extends GameApplet {
 			if (backDialogueId != -1) {
 				method29(17, Widget.widgets[backDialogueId], super.mouseEventX, 357, super.mouseEventY, 0);
 			} else if (super.mouseEventY < 434 && super.mouseEventX < 426) {
-				method74(super.mouseEventY - 357);
+				buildChatAreaMenu(super.mouseEventY - 357);
 			}
 		}
 		if (backDialogueId != -1 && anInt886 != anInt1039) {
-			aBoolean1223 = true;
+			redrawChatbox = true;
 			anInt1039 = anInt886;
 		}
 		boolean flag = false;
@@ -7359,13 +7359,13 @@ public final class Client extends GameApplet {
 		while (!flag) {
 			flag = true;
 			for (int j = 0; j < menuActionRow - 1; j++) {
-				if (anIntArray1093[j] < 1000 && anIntArray1093[j + 1] > 1000) {
+				if (menuActionIds[j] < 1000 && menuActionIds[j + 1] > 1000) {
 					String text = menuActionTexts[j];
 					menuActionTexts[j] = menuActionTexts[j + 1];
 					menuActionTexts[j + 1] = text;
-					int k = anIntArray1093[j];
-					anIntArray1093[j] = anIntArray1093[j + 1];
-					anIntArray1093[j + 1] = k;
+					int k = menuActionIds[j];
+					menuActionIds[j] = menuActionIds[j + 1];
+					menuActionIds[j + 1] = k;
 					k = anIntArray1091[j];
 					anIntArray1091[j] = anIntArray1091[j + 1];
 					anIntArray1091[j + 1] = k;
@@ -7617,7 +7617,7 @@ public final class Client extends GameApplet {
 
 		if (selectedItemId == 1) {
 			menuActionTexts[menuActionRow] = "Use " + selectedItemName + " with @yel@" + text;
-			anIntArray1093[menuActionRow] = 582;
+			menuActionIds[menuActionRow] = 582;
 			anIntArray1094[menuActionRow] = i;
 			anIntArray1091[menuActionRow] = k;
 			anIntArray1092[menuActionRow] = j;
@@ -7628,7 +7628,7 @@ public final class Client extends GameApplet {
 		if (selectedSpellId == 1) {
 			if ((anInt1138 & 2) == 2) {
 				menuActionTexts[menuActionRow] = selectedSpellName + " @yel@" + text;
-				anIntArray1093[menuActionRow] = 413;
+				menuActionIds[menuActionRow] = 413;
 				anIntArray1094[menuActionRow] = i;
 				anIntArray1091[menuActionRow] = k;
 				anIntArray1092[menuActionRow] = j;
@@ -7642,15 +7642,15 @@ public final class Client extends GameApplet {
 						menuActionTexts[menuActionRow] = definition.interactions[index] + " @yel@" + text;
 
 						if (index == 0) {
-							anIntArray1093[menuActionRow] = 20; // opcode 155 - first action
+							menuActionIds[menuActionRow] = 20; // opcode 155 - first action
 						} else if (index == 1) {
-							anIntArray1093[menuActionRow] = 412; // opcode 72 - second action
+							menuActionIds[menuActionRow] = 412; // opcode 72 - second action
 						} else if (index == 2) {
-							anIntArray1093[menuActionRow] = 225; // opcode 17 - third action
+							menuActionIds[menuActionRow] = 225; // opcode 17 - third action
 						} else if (index == 3) {
-							anIntArray1093[menuActionRow] = 965; // opcode 21 - fourth action
+							menuActionIds[menuActionRow] = 965; // opcode 21 - fourth action
 						} else if (index == 4) {
-							anIntArray1093[menuActionRow] = 478; // opcode 18 - fifth action
+							menuActionIds[menuActionRow] = 478; // opcode 18 - fifth action
 						}
 
 						anIntArray1094[menuActionRow] = i;
@@ -7669,15 +7669,15 @@ public final class Client extends GameApplet {
 						menuActionTexts[menuActionRow] = definition.interactions[index] + " @yel@" + text;
 
 						if (index == 0) {
-							anIntArray1093[menuActionRow] = 20 + offset;
+							menuActionIds[menuActionRow] = 20 + offset;
 						} else if (index == 1) {
-							anIntArray1093[menuActionRow] = 412 + offset;
+							menuActionIds[menuActionRow] = 412 + offset;
 						} else if (index == 2) {
-							anIntArray1093[menuActionRow] = 225 + offset;
+							menuActionIds[menuActionRow] = 225 + offset;
 						} else if (index == 3) {
-							anIntArray1093[menuActionRow] = 965 + offset;
+							menuActionIds[menuActionRow] = 965 + offset;
 						} else if (index == 4) {
-							anIntArray1093[menuActionRow] = 478 + offset;
+							menuActionIds[menuActionRow] = 478 + offset;
 						}
 
 						anIntArray1094[menuActionRow] = i;
@@ -7689,7 +7689,7 @@ public final class Client extends GameApplet {
 			}
 
 			menuActionTexts[menuActionRow] = "Examine @yel@" + text;
-			anIntArray1093[menuActionRow] = 1025;
+			menuActionIds[menuActionRow] = 1025;
 			anIntArray1094[menuActionRow] = i;
 			anIntArray1091[menuActionRow] = k;
 			anIntArray1092[menuActionRow] = j;
@@ -7715,7 +7715,7 @@ public final class Client extends GameApplet {
 
 		if (selectedItemId == 1) {
 			menuActionTexts[menuActionRow] = "Use " + selectedItemName + " with @whi@" + text;
-			anIntArray1093[menuActionRow] = 491;
+			menuActionIds[menuActionRow] = 491;
 			anIntArray1094[menuActionRow] = j;
 			anIntArray1091[menuActionRow] = i;
 			anIntArray1092[menuActionRow] = k;
@@ -7723,7 +7723,7 @@ public final class Client extends GameApplet {
 		} else if (selectedSpellId == 1) {
 			if ((anInt1138 & 8) == 8) {
 				menuActionTexts[menuActionRow] = selectedSpellName + " @whi@" + text;
-				anIntArray1093[menuActionRow] = 365;
+				menuActionIds[menuActionRow] = 365;
 				anIntArray1094[menuActionRow] = j;
 				anIntArray1091[menuActionRow] = i;
 				anIntArray1092[menuActionRow] = k;
@@ -7751,15 +7751,15 @@ public final class Client extends GameApplet {
 					}
 
 					if (index == 0) {
-						anIntArray1093[menuActionRow] = 561 + offset;
+						menuActionIds[menuActionRow] = 561 + offset;
 					} else if (index == 1) {
-						anIntArray1093[menuActionRow] = 779 + offset;
+						menuActionIds[menuActionRow] = 779 + offset;
 					} else if (index == 2) {
-						anIntArray1093[menuActionRow] = 27 + offset;
+						menuActionIds[menuActionRow] = 27 + offset;
 					} else if (index == 3) {
-						anIntArray1093[menuActionRow] = 577 + offset;
+						menuActionIds[menuActionRow] = 577 + offset;
 					} else if (index == 4) {
-						anIntArray1093[menuActionRow] = 729 + offset;
+						menuActionIds[menuActionRow] = 729 + offset;
 					}
 
 					anIntArray1094[menuActionRow] = j;
@@ -7771,7 +7771,7 @@ public final class Client extends GameApplet {
 		}
 
 		for (int index = 0; index < menuActionRow; index++) {
-			if (anIntArray1093[index] == 516) {
+			if (menuActionIds[index] == 516) {
 				menuActionTexts[index] = "Walk here @whi@" + text;
 				return;
 			}
@@ -8783,11 +8783,11 @@ public final class Client extends GameApplet {
 				int overlay = incomingBuffer.readUShort();
 				if (backDialogueId != -1) {
 					backDialogueId = -1;
-					aBoolean1223 = true;
+					redrawChatbox = true;
 				}
 				if (inputDialogueState != 0) {
 					inputDialogueState = 0;
-					aBoolean1223 = true;
+					redrawChatbox = true;
 				}
 				openInterfaceId = id;
 				inventoryOverlayInterfaceId = overlay;
@@ -8919,11 +8919,11 @@ public final class Client extends GameApplet {
 				resetAnimation(id);
 				if (backDialogueId != -1) {
 					backDialogueId = -1;
-					aBoolean1223 = true;
+					redrawChatbox = true;
 				}
 				if (inputDialogueState != 0) {
 					inputDialogueState = 0;
-					aBoolean1223 = true;
+					redrawChatbox = true;
 				}
 				inventoryOverlayInterfaceId = id;
 				redrawTabArea = true;
@@ -8948,7 +8948,7 @@ public final class Client extends GameApplet {
 				privateChatMode = incomingBuffer.readUByte();
 				tradeChatMode = incomingBuffer.readUByte();
 				aBoolean1233 = true;
-				aBoolean1223 = true;
+				redrawChatbox = true;
 				opcode = -1;
 				return true;
 			}
@@ -9060,16 +9060,16 @@ public final class Client extends GameApplet {
 			if (opcode == 27) {
 				messagePromptRaised = false;
 				inputDialogueState = 1;
-				aString1004 = "";
-				aBoolean1223 = true;
+				textInput = "";
+				redrawChatbox = true;
 				opcode = -1;
 				return true;
 			}
 			if (opcode == 187) {
 				messagePromptRaised = false;
 				inputDialogueState = 2;
-				aString1004 = "";
-				aBoolean1223 = true;
+				textInput = "";
+				redrawChatbox = true;
 				opcode = -1;
 				return true;
 			}
@@ -9083,11 +9083,11 @@ public final class Client extends GameApplet {
 				}
 				if (backDialogueId != -1) {
 					backDialogueId = -1;
-					aBoolean1223 = true;
+					redrawChatbox = true;
 				}
 				if (inputDialogueState != 0) {
 					inputDialogueState = 0;
-					aBoolean1223 = true;
+					redrawChatbox = true;
 				}
 				openInterfaceId = id;
 				aBoolean1149 = false;
@@ -9096,7 +9096,7 @@ public final class Client extends GameApplet {
 			}
 			if (opcode == 218) {
 				dialogueId = incomingBuffer.readLEShortA();
-				aBoolean1223 = true;
+				redrawChatbox = true;
 				opcode = -1;
 				return true;
 			}
@@ -9109,7 +9109,7 @@ public final class Client extends GameApplet {
 					method33(id);
 					redrawTabArea = true;
 					if (dialogueId != -1) {
-						aBoolean1223 = true;
+						redrawChatbox = true;
 					}
 				}
 				opcode = -1;
@@ -9124,7 +9124,7 @@ public final class Client extends GameApplet {
 					method33(id);
 					redrawTabArea = true;
 					if (dialogueId != -1) {
-						aBoolean1223 = true;
+						redrawChatbox = true;
 					}
 				}
 				opcode = -1;
@@ -9155,11 +9155,11 @@ public final class Client extends GameApplet {
 				}
 				if (backDialogueId != -1) {
 					backDialogueId = -1;
-					aBoolean1223 = true;
+					redrawChatbox = true;
 				}
 				if (inputDialogueState != 0) {
 					inputDialogueState = 0;
-					aBoolean1223 = true;
+					redrawChatbox = true;
 				}
 				openInterfaceId = -1;
 				aBoolean1149 = false;
@@ -9207,7 +9207,7 @@ public final class Client extends GameApplet {
 					aBoolean1103 = true;
 				}
 				backDialogueId = id;
-				aBoolean1223 = true;
+				redrawChatbox = true;
 				openInterfaceId = -1;
 				aBoolean1149 = false;
 				opcode = -1;
@@ -9590,7 +9590,7 @@ public final class Client extends GameApplet {
 						redrawTabArea = true;
 
 						if (backDialogueId != -1) {
-							aBoolean1223 = true;
+							redrawChatbox = true;
 						}
 					}
 				}
@@ -10047,7 +10047,7 @@ public final class Client extends GameApplet {
 					redrawTabArea = true;
 				}
 				if (anInt1246 == 3) {
-					aBoolean1223 = true;
+					redrawChatbox = true;
 				}
 				anInt1246 = 0;
 			}
@@ -10063,7 +10063,7 @@ public final class Client extends GameApplet {
 					redrawTabArea = true;
 				}
 				if (anInt1086 == 3) {
-					aBoolean1223 = true;
+					redrawChatbox = true;
 				}
 				anInt1086 = 0;
 				if (aBoolean1242 && anInt989 >= 5) {
@@ -10129,7 +10129,7 @@ public final class Client extends GameApplet {
 		}
 		if (super.lastMetaModifier == 1 && clickToContinueString != null) {
 			clickToContinueString = null;
-			aBoolean1223 = true;
+			redrawChatbox = true;
 			super.lastMetaModifier = 0;
 		}
 		method20();
@@ -10149,7 +10149,7 @@ public final class Client extends GameApplet {
 			anIntArray1030[i1]++;
 		}
 
-		method73();
+		processInput();
 		super.timeIdle++;
 		if (super.timeIdle > 4500) {
 			anInt1011 = 250;
@@ -10622,7 +10622,7 @@ public final class Client extends GameApplet {
 		incompleteAnimables = null;
 		anIntArray1091 = null;
 		anIntArray1092 = null;
-		anIntArray1093 = null;
+		menuActionIds = null;
 		anIntArray1094 = null;
 		menuActionTexts = null;
 		settings = null;
@@ -10679,7 +10679,7 @@ public final class Client extends GameApplet {
 		SignLink.midi = "stop";
 	}
 
-	public final void unignoreUser(long encodedName) {
+	public final void removeIgnore(long encodedName) {
 		try {
 			if (encodedName == 0L) {
 				return;
