@@ -197,7 +197,7 @@ public final class Client extends GameApplet {
 	private boolean redrawChatbox;
 	private boolean aBoolean1233;
 	private boolean aBoolean1242;
-	private boolean aBoolean1255;
+	private boolean redrawBorders;
 	private volatile boolean aBoolean831;
 	private boolean aBoolean848 = true;
 	private boolean aBoolean872;
@@ -287,7 +287,7 @@ public final class Client extends GameApplet {
 	private int reportInterfaceId;
 	private int anInt1186;
 	private int anInt1187;
-	private int anInt1195;
+	private int splitPrivateChat;
 	private int anInt1209;
 	private int anInt1210;
 	private int anInt1211 = 78;
@@ -297,8 +297,8 @@ public final class Client extends GameApplet {
 	private int anInt1244;
 	private int anInt1245;
 	private int anInt1246;
-	private int anInt1249;
-	private int anInt1253;
+	private int chatEffects;
+	private int mouseButtons;
 	private int anInt1254;
 	private int anInt1257;
 	private int anInt1264;
@@ -321,7 +321,7 @@ public final class Client extends GameApplet {
 	private int anInt896;
 	private int anInt897;
 	private int anInt902 = 0x766654;
-	private int anInt913;
+	private int bankInsertMode;//check this
 	private int anInt914;
 	private int anInt915;
 	private int anInt916;
@@ -337,8 +337,8 @@ public final class Client extends GameApplet {
 	private int anInt950;
 	private int anInt951;
 	private int anInt952;
-	private int anInt974;
-	private int anInt975;
+	private int textCount;
+	private int maxTextCount;
 	private int anInt984;
 	private int anInt985;
 	private int anInt988;
@@ -377,12 +377,12 @@ public final class Client extends GameApplet {
 	private int[] anIntArray928;
 	private int[] anIntArray968;
 	private int[] anIntArray969;
-	private int[] anIntArray976;
-	private int[] anIntArray977;
-	private int[] anIntArray978;
-	private int[] anIntArray979;
-	private int[] anIntArray981;
-	private int[] anIntArray982;
+	private int[] spokenTextX;
+	private int[] spokenTextY;
+	private int[] spokenTextHeight;
+	private int[] spokenTextWidth;
+	private int[] spokenTextEffect;
+	private int[] spokenTextCycle;
 	private int[][] anIntArrayArray825 = new int[104][104];
 	private int[][] anIntArrayArray901;
 	private int[][] anIntArrayArray929;
@@ -392,7 +392,7 @@ public final class Client extends GameApplet {
 	private String aString1121;
 	private String messagePromptInput;
 	private String[] aStringArray1127;
-	private String[] aStringArray983;
+	private String[] spokenText;
 	private boolean avatarChanged;;
 	private IndexedImage backBase1;
 	private IndexedImage backBase2;
@@ -549,7 +549,7 @@ public final class Client extends GameApplet {
 	private int systemUpdateTime;
 	private int tabId;
 	private DirectSprite teamMapdot;
-	private int[] textColourEffect;
+	private int[] spokenTextColour;
 	private int[] textColours = { 0xffff00, 0xff0000, 65280, 65535, 0xff00ff, 0xffffff };
 	private int thirdLastOpcode;
 	private int tickDelta;
@@ -603,15 +603,15 @@ public final class Client extends GameApplet {
 		anIntArray969 = new int[256];
 		indices = new Index[5];
 		settings = new int[2000];
-		anInt975 = 50;
-		anIntArray976 = new int[anInt975];
-		anIntArray977 = new int[anInt975];
-		anIntArray978 = new int[anInt975];
-		anIntArray979 = new int[anInt975];
-		textColourEffect = new int[anInt975];
-		anIntArray981 = new int[anInt975];
-		anIntArray982 = new int[anInt975];
-		aStringArray983 = new String[anInt975];
+		maxTextCount = 50;
+		spokenTextX = new int[maxTextCount];
+		spokenTextY = new int[maxTextCount];
+		spokenTextHeight = new int[maxTextCount];
+		spokenTextWidth = new int[maxTextCount];
+		spokenTextColour = new int[maxTextCount];
+		spokenTextEffect = new int[maxTextCount];
+		spokenTextCycle = new int[maxTextCount];
+		spokenText = new String[maxTextCount];
 		anInt985 = -1;
 		hitMarks = new DirectSprite[20];
 		characterDesignColours = new int[5];
@@ -1043,7 +1043,7 @@ public final class Client extends GameApplet {
 	}
 
 	public final void drawChatMessages() {
-		if (anInt1195 == 0) {
+		if (splitPrivateChat == 0) {
 			return;
 		}
 		Font font = frameFont;
@@ -1067,7 +1067,7 @@ public final class Client extends GameApplet {
 				}
 
 				if ((type == 3 || type == 7)
-						&& (type == 7 || privateChatMode == 0 || privateChatMode == 1 && isBefriendedPlayer(name))) {
+						&& (type == 7 || privateChatMode == 0 || privateChatMode == 1 && displayMessageFrom(name))) {
 					int y = 329 - message * 13;
 					int x = 4;
 					font.render(x, y, "From", 0);
@@ -1109,8 +1109,8 @@ public final class Client extends GameApplet {
 	}
 
 	public final void drawGameScreen() {
-		if (aBoolean1255) {
-			aBoolean1255 = false;
+		if (redrawBorders) {
+			redrawBorders = false;
 			backLeft1Buffer.drawImage(super.graphics, 0, 4);
 			backLeft2Buffer.drawImage(super.graphics, 0, 357);
 			backRight1Buffer.drawImage(super.graphics, 722, 4);
@@ -1369,8 +1369,8 @@ public final class Client extends GameApplet {
 		Raster.fillRectangle(x / 2 - 150 + i * 3, y + 2, 30, 300 - i * 3, 0);
 		boldFont.renderCentre(x / 2, c1 / 2 + 5 - byte1, text, 0xffffff);
 		aClass15_1109.drawImage(super.graphics, 202, 171);
-		if (aBoolean1255) {
-			aBoolean1255 = false;
+		if (redrawBorders) {
+			redrawBorders = false;
 			if (!aBoolean831) {
 				aClass15_1110.drawImage(super.graphics, 0, 0);
 				aClass15_1111.drawImage(super.graphics, 637, 0);
@@ -1446,8 +1446,8 @@ public final class Client extends GameApplet {
 		}
 
 		aClass15_1109.drawImage(super.graphics, 202, 171);
-		if (aBoolean1255) {
-			aBoolean1255 = false;
+		if (redrawBorders) {
+			redrawBorders = false;
 			aClass15_1107.drawImage(super.graphics, 128, 0);
 			aClass15_1108.drawImage(super.graphics, 202, 371);
 			aClass15_1112.drawImage(super.graphics, 0, 265);
@@ -1482,7 +1482,7 @@ public final class Client extends GameApplet {
 		aClass15_1123 = new ProducingGraphicsBuffer(getFrame(), 496, 50);
 		aClass15_1124 = new ProducingGraphicsBuffer(getFrame(), 269, 37);
 		aClass15_1125 = new ProducingGraphicsBuffer(getFrame(), 249, 45);
-		aBoolean1255 = true;
+		redrawBorders = true;
 	}
 
 	public final int executeScript(Widget widget, int id) {
@@ -1712,7 +1712,7 @@ public final class Client extends GameApplet {
 		startApplet(503, 765);
 	}
 
-	public final boolean isBefriendedPlayer(String s) {
+	public final boolean displayMessageFrom(String s) {
 		if (s == null) {
 			return false;
 		}
@@ -2062,7 +2062,7 @@ public final class Client extends GameApplet {
 
 			drawLoadingText(83, "Unpacking textures");
 			Rasterizer.loadFloorImages(textureArchive);
-			Rasterizer.method372(0.8D);
+			Rasterizer.generatePalette(0.8D);
 			Rasterizer.method367(20);
 			drawLoadingText(86, "Unpacking config");
 			Animation.init(configArchive);
@@ -2434,7 +2434,7 @@ public final class Client extends GameApplet {
 
 	@Override
 	public final void method10() {
-		aBoolean1255 = true;
+		redrawBorders = true;
 	}
 
 	public final void method100(Mob mob) {
@@ -3467,7 +3467,7 @@ public final class Client extends GameApplet {
 	}
 
 	public final void method129() {
-		if (anInt1195 == 0) {
+		if (splitPrivateChat == 0) {
 			return;
 		}
 		int messageSlot = 0;
@@ -3485,7 +3485,7 @@ public final class Client extends GameApplet {
 					username = username.substring(5);
 				}
 				if ((type == 3 || type == 7)
-						&& (type == 7 || privateChatMode == 0 || privateChatMode == 1 && isBefriendedPlayer(username))) {
+						&& (type == 7 || privateChatMode == 0 || privateChatMode == 1 && displayMessageFrom(username))) {
 					int y = 329 - messageSlot * 13;
 					if (super.mouseEventX > 4 && super.mouseEventY > y - 6 && super.mouseEventY <= y + 7) {
 						int width = frameFont.getTextWidth("From:  " + username + chatMessages[index]) + 25;
@@ -3860,7 +3860,7 @@ public final class Client extends GameApplet {
 						count++;
 					}
 					if ((type == 1 || type == 2)
-							&& (type == 1 || publicChatMode == 0 || publicChatMode == 1 && isBefriendedPlayer(username))) {
+							&& (type == 1 || publicChatMode == 0 || publicChatMode == 1 && displayMessageFrom(username))) {
 						if (y > 0 && y < 110) {
 							int x = 4;
 							if (privilege == 1) {
@@ -3877,8 +3877,8 @@ public final class Client extends GameApplet {
 						}
 						count++;
 					}
-					if ((type == 3 || type == 7) && anInt1195 == 0
-							&& (type == 7 || privateChatMode == 0 || privateChatMode == 1 && isBefriendedPlayer(username))) {
+					if ((type == 3 || type == 7) && splitPrivateChat == 0
+							&& (type == 7 || privateChatMode == 0 || privateChatMode == 1 && displayMessageFrom(username))) {
 						if (y > 0 && y < 110) {
 							int k1 = 4;
 							typeface.render(k1, y, "From", 0);
@@ -3897,26 +3897,26 @@ public final class Client extends GameApplet {
 						}
 						count++;
 					}
-					if (type == 4 && (tradeChatMode == 0 || tradeChatMode == 1 && isBefriendedPlayer(username))) {
+					if (type == 4 && (tradeChatMode == 0 || tradeChatMode == 1 && displayMessageFrom(username))) {
 						if (y > 0 && y < 110) {
 							typeface.render(4, y, username + " " + chatMessages[message], 0x800080);
 						}
 						count++;
 					}
-					if (type == 5 && anInt1195 == 0 && privateChatMode < 2) {
+					if (type == 5 && splitPrivateChat == 0 && privateChatMode < 2) {
 						if (y > 0 && y < 110) {
 							typeface.render(4, y, chatMessages[message], 0x800000);
 						}
 						count++;
 					}
-					if (type == 6 && anInt1195 == 0 && privateChatMode < 2) {
+					if (type == 6 && splitPrivateChat == 0 && privateChatMode < 2) {
 						if (y > 0 && y < 110) {
 							typeface.render(4, y, "To " + username + ":", 0);
 							typeface.render(12 + typeface.getTextWidth("To " + username), y, chatMessages[message], 0x800000);
 						}
 						count++;
 					}
-					if (type == 8 && (tradeChatMode == 0 || tradeChatMode == 1 && isBefriendedPlayer(username))) {
+					if (type == 8 && (tradeChatMode == 0 || tradeChatMode == 1 && displayMessageFrom(username))) {
 						if (y > 0 && y < 110) {
 							typeface.render(4, y, username + " " + chatMessages[message], 0x7e3200);
 						}
@@ -4048,7 +4048,7 @@ public final class Client extends GameApplet {
 					}
 				}
 			}
-			if (j == 1 && (anInt1253 == 1 || method17(menuActionRow - 1)) && menuActionRow > 2) {
+			if (j == 1 && (mouseButtons == 1 || method17(menuActionRow - 1)) && menuActionRow > 2) {
 				j = 2;
 			}
 			if (j == 1 && menuActionRow > 0) {
@@ -4657,19 +4657,19 @@ public final class Client extends GameApplet {
 		int state = settings[id];
 		if (parameter == 1) {
 			if (state == 1) {
-				Rasterizer.method372(0.9);
+				Rasterizer.generatePalette(0.9);
 			}
 			if (state == 2) {
-				Rasterizer.method372(0.8);
+				Rasterizer.generatePalette(0.8);
 			}
 			if (state == 3) {
-				Rasterizer.method372(0.7);
+				Rasterizer.generatePalette(0.7);
 			}
 			if (state == 4) {
-				Rasterizer.method372(0.6);
+				Rasterizer.generatePalette(0.6);
 			}
 			ItemDefinition.sprites.unlink();
-			aBoolean1255 = true;
+			redrawBorders = true;
 		}
 		if (parameter == 3) {
 			boolean previousPlayingMusic = playingMusic;
@@ -4716,16 +4716,16 @@ public final class Client extends GameApplet {
 				aBoolean848 = false;
 			}
 		} else if (parameter == 5) {
-			anInt1253 = state;
+			mouseButtons = state;
 		} else if (parameter == 6) {
-			anInt1249 = state;
+			chatEffects = state;
 		}
 		if (parameter == 8) {
-			anInt1195 = state;
+			splitPrivateChat = state;
 			redrawChatbox = true;
 		}
 		if (parameter == 9) {
-			anInt913 = state;
+			bankInsertMode = state;
 		}
 	}
 
@@ -5525,7 +5525,7 @@ public final class Client extends GameApplet {
 			method56();
 			method51();
 		}
-		aBoolean1255 = true;
+		redrawBorders = true;
 	}
 
 	public final void method65(int i, int j, int k, int l, Widget class9, int i1, boolean flag, int j1, int k1) {
@@ -6878,7 +6878,7 @@ public final class Client extends GameApplet {
 			if (type == 0) {
 				scrollOffset++;
 			}
-			if ((type == 1 || type == 2) && (type == 1 || publicChatMode == 0 || publicChatMode == 1 && isBefriendedPlayer(name))) {
+			if ((type == 1 || type == 2) && (type == 1 || publicChatMode == 0 || publicChatMode == 1 && displayMessageFrom(name))) {
 				if (mouseY > scrollPos - 14 && mouseY <= scrollPos && !name.equals(localPlayer.name)) {
 					if (playerPrivelage >= 1) {
 						menuActionTexts[menuActionRow] = "Report abuse @whi@" + name;
@@ -6894,8 +6894,8 @@ public final class Client extends GameApplet {
 				}
 				scrollOffset++;
 			}
-			if ((type == 3 || type == 7) && anInt1195 == 0
-					&& (type == 7 || privateChatMode == 0 || privateChatMode == 1 && isBefriendedPlayer(name))) {
+			if ((type == 3 || type == 7) && splitPrivateChat == 0
+					&& (type == 7 || privateChatMode == 0 || privateChatMode == 1 && displayMessageFrom(name))) {
 				if (mouseY > scrollPos - 14 && mouseY <= scrollPos) {
 					if (playerPrivelage >= 1) {
 						menuActionTexts[menuActionRow] = "Report abuse @whi@" + name;
@@ -6911,7 +6911,7 @@ public final class Client extends GameApplet {
 				}
 				scrollOffset++;
 			}
-			if (type == 4 && (tradeChatMode == 0 || tradeChatMode == 1 && isBefriendedPlayer(name))) {
+			if (type == 4 && (tradeChatMode == 0 || tradeChatMode == 1 && displayMessageFrom(name))) {
 				if (mouseY > scrollPos - 14 && mouseY <= scrollPos) {
 					menuActionTexts[menuActionRow] = "Accept trade @whi@" + name;
 					menuActionIds[menuActionRow] = 484;
@@ -6919,10 +6919,10 @@ public final class Client extends GameApplet {
 				}
 				scrollOffset++;
 			}
-			if ((type == 5 || type == 6) && anInt1195 == 0 && privateChatMode < 2) {
+			if ((type == 5 || type == 6) && splitPrivateChat == 0 && privateChatMode < 2) {
 				scrollOffset++;
 			}
-			if (type == 8 && (tradeChatMode == 0 || tradeChatMode == 1 && isBefriendedPlayer(name))) {
+			if (type == 8 && (tradeChatMode == 0 || tradeChatMode == 1 && displayMessageFrom(name))) {
 				if (mouseY > scrollPos - 14 && mouseY <= scrollPos) {
 					menuActionTexts[menuActionRow] = "Accept challenge @whi@" + name;
 					menuActionIds[menuActionRow] = 6;
@@ -10072,7 +10072,7 @@ public final class Client extends GameApplet {
 					if (anInt1067 == anInt1084 && anInt1066 != anInt1085) {
 						Widget widget = Widget.widgets[anInt1084];
 						int j1 = 0;
-						if (anInt913 == 1 && widget.anInt214 == 206) {
+						if (bankInsertMode == 1 && widget.anInt214 == 206) {
 							j1 = 1;
 						}
 						if (widget.inventoryIds[anInt1066] <= 0) {
@@ -10106,7 +10106,7 @@ public final class Client extends GameApplet {
 						outgoing.writeLEShortA(anInt1085); // old
 						outgoing.writeLEShort(anInt1066); // new
 					}
-				} else if ((anInt1253 == 1 || method17(menuActionRow - 1)) && menuActionRow > 2) {
+				} else if ((mouseButtons == 1 || method17(menuActionRow - 1)) && menuActionRow > 2) {
 					method116();
 				} else if (menuActionRow > 0) {
 					method69(menuActionRow - 1);
@@ -10716,7 +10716,7 @@ public final class Client extends GameApplet {
 	}
 
 	public final void updateCharacters() {
-		anInt974 = 0;
+		textCount = 0;
 		for (int j = -1; j < playerCount + npcCount; j++) {
 			Mob mob;
 			if (j == -1) {
@@ -10776,26 +10776,26 @@ public final class Client extends GameApplet {
 			}
 			if (mob.spokenText != null
 					&& (j >= playerCount || publicChatMode == 0 || publicChatMode == 3 || publicChatMode == 1
-							&& isBefriendedPlayer(((Player) mob).name))) {
+							&& displayMessageFrom(((Player) mob).name))) {
 				method127(mob, mob.height);
-				if (spriteDrawX > -1 && anInt974 < anInt975) {
-					anIntArray979[anInt974] = boldFont.getExactTextWidth(mob.spokenText) / 2;
-					anIntArray978[anInt974] = boldFont.verticalSpace;
-					anIntArray976[anInt974] = spriteDrawX;
-					anIntArray977[anInt974] = spriteDrawY;
-					textColourEffect[anInt974] = mob.textColour;
-					anIntArray981[anInt974] = mob.textEffect;
-					anIntArray982[anInt974] = mob.textCycle;
-					aStringArray983[anInt974++] = mob.spokenText;
-					if (anInt1249 == 0 && mob.textEffect >= 1 && mob.textEffect <= 3) {
-						anIntArray978[anInt974] += 10;
-						anIntArray977[anInt974] += 5;
+				if (spriteDrawX > -1 && textCount < maxTextCount) {
+					spokenTextWidth[textCount] = boldFont.getExactTextWidth(mob.spokenText) / 2;
+					spokenTextHeight[textCount] = boldFont.verticalSpace;
+					spokenTextX[textCount] = spriteDrawX;
+					spokenTextY[textCount] = spriteDrawY;
+					spokenTextColour[textCount] = mob.textColour;
+					spokenTextEffect[textCount] = mob.textEffect;
+					spokenTextCycle[textCount] = mob.textCycle;
+					spokenText[textCount++] = mob.spokenText;
+					if (chatEffects == 0 && mob.textEffect >= 1 && mob.textEffect <= 3) {
+						spokenTextHeight[textCount] += 10;
+						spokenTextY[textCount] += 5;
 					}
-					if (anInt1249 == 0 && mob.textEffect == 4) {
-						anIntArray979[anInt974] = 60;
+					if (chatEffects == 0 && mob.textEffect == 4) {
+						spokenTextWidth[textCount] = 60;
 					}
-					if (anInt1249 == 0 && mob.textEffect == 5) {
-						anIntArray978[anInt974] += 5;
+					if (chatEffects == 0 && mob.textEffect == 5) {
+						spokenTextHeight[textCount] += 5;
 					}
 				}
 			}
@@ -10833,43 +10833,43 @@ public final class Client extends GameApplet {
 			}
 		}
 
-		for (int message = 0; message < anInt974; message++) {
-			int k1 = anIntArray976[message];
-			int l1 = anIntArray977[message];
-			int j2 = anIntArray979[message];
-			int k2 = anIntArray978[message];
+		for (int message = 0; message < textCount; message++) {
+			int k1 = spokenTextX[message];
+			int l1 = spokenTextY[message];
+			int j2 = spokenTextWidth[message];
+			int k2 = spokenTextHeight[message];
 			boolean flag = true;
 			while (flag) {
 				flag = false;
 				for (int l2 = 0; l2 < message; l2++) {
-					if (l1 + 2 > anIntArray977[l2] - anIntArray978[l2] && l1 - k2 < anIntArray977[l2] + 2
-							&& k1 - j2 < anIntArray976[l2] + anIntArray979[l2] && k1 + j2 > anIntArray976[l2] - anIntArray979[l2]
-							&& anIntArray977[l2] - anIntArray978[l2] < l1) {
-						l1 = anIntArray977[l2] - anIntArray978[l2];
+					if (l1 + 2 > spokenTextY[l2] - spokenTextHeight[l2] && l1 - k2 < spokenTextY[l2] + 2
+							&& k1 - j2 < spokenTextX[l2] + spokenTextWidth[l2] && k1 + j2 > spokenTextX[l2] - spokenTextWidth[l2]
+							&& spokenTextY[l2] - spokenTextHeight[l2] < l1) {
+						l1 = spokenTextY[l2] - spokenTextHeight[l2];
 						flag = true;
 					}
 				}
 
 			}
-			spriteDrawX = anIntArray976[message];
-			spriteDrawY = anIntArray977[message] = l1;
-			String chatMessage = aStringArray983[message];
-			if (anInt1249 == 0) {
+			spriteDrawX = spokenTextX[message];
+			spriteDrawY = spokenTextY[message] = l1;
+			String chatMessage = spokenText[message];
+			if (chatEffects == 0) {
 				int textColour = 0xffff00;
-				if (textColourEffect[message] < 6) {
-					textColour = textColours[textColourEffect[message]];
+				if (spokenTextColour[message] < 6) {
+					textColour = textColours[spokenTextColour[message]];
 				}
-				if (textColourEffect[message] == 6) {
+				if (spokenTextColour[message] == 6) {
 					textColour = anInt1265 % 20 >= 10 ? 0xffff00 : 0xff0000;
 				}
-				if (textColourEffect[message] == 7) {
+				if (spokenTextColour[message] == 7) {
 					textColour = anInt1265 % 20 >= 10 ? 65535 : 255;
 				}
-				if (textColourEffect[message] == 8) {
+				if (spokenTextColour[message] == 8) {
 					textColour = anInt1265 % 20 >= 10 ? 0x80ff80 : 45056;
 				}
-				if (textColourEffect[message] == 9) {
-					int j3 = 150 - anIntArray982[message];
+				if (spokenTextColour[message] == 9) {
+					int j3 = 150 - spokenTextCycle[message];
 					if (j3 < 50) {
 						textColour = 0xff0000 + 1280 * j3;
 					} else if (j3 < 100) {
@@ -10878,8 +10878,8 @@ public final class Client extends GameApplet {
 						textColour = 65280 + 5 * (j3 - 100);
 					}
 				}
-				if (textColourEffect[message] == 10) {
-					int k3 = 150 - anIntArray982[message];
+				if (spokenTextColour[message] == 10) {
+					int k3 = 150 - spokenTextCycle[message];
 					if (k3 < 50) {
 						textColour = 0xff0000 + 5 * k3;
 					} else if (k3 < 100) {
@@ -10888,8 +10888,8 @@ public final class Client extends GameApplet {
 						textColour = 255 + 0x50000 * (k3 - 100) - 5 * (k3 - 100);
 					}
 				}
-				if (textColourEffect[message] == 11) {
-					int l3 = 150 - anIntArray982[message];
+				if (spokenTextColour[message] == 11) {
+					int l3 = 150 - spokenTextCycle[message];
 					if (l3 < 50) {
 						textColour = 0xffffff - 0x50005 * l3;
 					} else if (l3 < 100) {
@@ -10898,32 +10898,32 @@ public final class Client extends GameApplet {
 						textColour = 0xffffff - 0x50000 * (l3 - 100);
 					}
 				}
-				if (anIntArray981[message] == 0) {
+				if (spokenTextEffect[message] == 0) {
 					boldFont.renderCentre(spriteDrawX, spriteDrawY + 1, chatMessage, 0);
 					boldFont.renderCentre(spriteDrawX, spriteDrawY, chatMessage, textColour);
 				}
-				if (anIntArray981[message] == 1) {
+				if (spokenTextEffect[message] == 1) {
 					boldFont.wave(chatMessage, spriteDrawX, spriteDrawY + 1, 0, anInt1265);
 					boldFont.wave(chatMessage, spriteDrawX, spriteDrawY, textColour, anInt1265);
 				}
-				if (anIntArray981[message] == 2) {
+				if (spokenTextEffect[message] == 2) {
 					boldFont.wave2(chatMessage, spriteDrawX, spriteDrawY + 1, 0, anInt1265);
 					boldFont.wave2(chatMessage, spriteDrawX, spriteDrawY, textColour, anInt1265);
 				}
-				if (anIntArray981[message] == 3) {
-					boldFont.shake(chatMessage, spriteDrawX, spriteDrawY + 1, 0, 150 - anIntArray982[message], anInt1265);
-					boldFont.shake(chatMessage, spriteDrawX, spriteDrawY, textColour, 150 - anIntArray982[message], anInt1265);
+				if (spokenTextEffect[message] == 3) {
+					boldFont.shake(chatMessage, spriteDrawX, spriteDrawY + 1, 0, 150 - spokenTextCycle[message], anInt1265);
+					boldFont.shake(chatMessage, spriteDrawX, spriteDrawY, textColour, 150 - spokenTextCycle[message], anInt1265);
 				}
-				if (anIntArray981[message] == 4) {
+				if (spokenTextEffect[message] == 4) {
 					int i4 = boldFont.getExactTextWidth(chatMessage);
-					int k4 = (150 - anIntArray982[message]) * (i4 + 100) / 150;
+					int k4 = (150 - spokenTextCycle[message]) * (i4 + 100) / 150;
 					Raster.setBounds(334, spriteDrawX - 50, spriteDrawX + 50, 0);
 					boldFont.render(spriteDrawX + 50 - k4, spriteDrawY + 1, chatMessage, 0);
 					boldFont.render(spriteDrawX + 50 - k4, spriteDrawY, chatMessage, textColour);
 					Raster.setDefaultBounds();
 				}
-				if (anIntArray981[message] == 5) {
-					int j4 = 150 - anIntArray982[message];
+				if (spokenTextEffect[message] == 5) {
+					int j4 = 150 - spokenTextCycle[message];
 					int l4 = 0;
 					if (j4 < 25) {
 						l4 = j4 - 25;

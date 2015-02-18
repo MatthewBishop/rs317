@@ -207,8 +207,8 @@ public class Rasterizer extends Raster {
 		return ai;
 	}
 
-	public static final void method372(double d) {
-		d += Math.random() * 0.03 - 0.015;
+	public static final void generatePalette(double brightness) {
+		brightness += Math.random() * 0.03 - 0.015;
 		int j = 0;
 		for (int k = 0; k < 512; k++) {
 			double d1 = (k / 8) / 64D + 0.0078125D;
@@ -267,7 +267,7 @@ public class Rasterizer extends Raster {
 				int i2 = (int) (d5 * 256D);
 				int j2 = (int) (d6 * 256D);
 				int k2 = (l1 << 16) + (i2 << 8) + j2;
-				k2 = method373(k2, d);
+				k2 = method373(k2, brightness);
 				if (k2 == 0) {
 					k2 = 1;
 				}
@@ -280,7 +280,7 @@ public class Rasterizer extends Raster {
 				int[] palette = floorImages[i].palette;
 				floorPalettes[i] = new int[palette.length];
 				for (int index = 0; index < palette.length; index++) {
-					floorPalettes[i][index] = method373(palette[index], d);
+					floorPalettes[i][index] = method373(palette[index], brightness);
 					if ((floorPalettes[i][index] & 0xf8f8ff) == 0 && index != 0) {
 						floorPalettes[i][index] = 1;
 					}
